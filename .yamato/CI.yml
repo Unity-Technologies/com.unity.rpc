@@ -27,6 +27,7 @@ test_{{ platform.name }}:
     image: {{ platform.image }}
     flavor: {{ platform.flavor}}
   commands:
+    - dotnet restore
     - dotnet test
     - nuget install xunit.runner.console
     - .\xunit.runner.console.2.4.1\tools\net461\xunit.console.exe Unity.Ipc.Tests\bin\Debug\Unity.Ipc.Tests.dll
