@@ -1,8 +1,16 @@
 platforms:
   - name: win
     type: Unity::VM
-    image: sdet/gamecode_win10:latest
+    image: sdet/gamecode_win10:stable
     flavor: m1.large
+  - name: macOS
+    type: Unity::VM::osx
+    image: buildfarm/mac:stable
+    flavor: m1.mac
+  - name: Linux
+    type: Unity::VM
+    image: yamato/ubuntu-18.04-dotnet:latest
+    flavor: b1.small
 ---
 build:
   name: Build Dependencies
