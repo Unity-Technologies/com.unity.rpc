@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net471;netcoreapp2.2</TargetFrameworks>
+    <AssemblyName>MessageData</AssemblyName>
+    <RootNamespace>MessageData</RootNamespace>
+  </PropertyGroup>
+
+</Project>

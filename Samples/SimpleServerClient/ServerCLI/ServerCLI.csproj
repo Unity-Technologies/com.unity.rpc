@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <AssemblyName>ipcserver</AssemblyName>
+    <RootNamespace>Unity.Ipc</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Serilog" Version="2.8.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="2.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Server\Unity.Ipc.Server.csproj" />
+    <ProjectReference Include="..\MessageData\MessageData.csproj" />
+    <ProjectReference Include="..\ServerImplementation\ServerImplementation.csproj" />
+  </ItemGroup>
+
+</Project>

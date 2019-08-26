@@ -1,0 +1,11 @@
+{
+	"name": "com.unity.ipc",
+	"displayName": "Unity IPC Client",
+	"version": "1.0.0-dev",
+	"unity": "2018.4",
+	"description": "",
+	"dependencies": {
+	},
+	"devDependencies": {
+	}
+}
