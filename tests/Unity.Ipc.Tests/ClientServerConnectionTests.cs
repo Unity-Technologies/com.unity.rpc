@@ -133,7 +133,7 @@ namespace Unity.Ipc.Tests
             var protocolRevision = 2;
             var tcpPort = _uniqueValues.NextTcpPortWithRange(protocolRevision + 1);
 
-            var serverHost = new IpcHost(tcpPort);
+            var serverHost = new Hosted.Client.IpcHost(tcpPort);
             serverHost.Configuration.AddLocalTarget<BasicMathService>();
             ThreadPool.QueueUserWorkItem(async _ => await serverHost.Run(cts.Token));
 
@@ -155,9 +155,9 @@ namespace Unity.Ipc.Tests
             Assert.False(timedout, "Server didn't shutdown in an acceptable timely fashion");
         }
 
-        private static async Task<IpcClient> NewClient(int tcpPort, CancellationTokenSource cts)
+        private static async Task<Ipc> NewClient(int tcpPort, CancellationTokenSource cts)
         {
-            var clientHost = new IpcHostClient(tcpPort);
+            var clientHost = new Hosted.Client.IpcHost(tcpPort);
             clientHost.Configuration.AddRemoteTarget<IMathSession>();
             return await clientHost.Start(cts.Token);
         }
@@ -192,7 +192,7 @@ namespace Unity.Ipc.Tests
         public async void SingleClientNoServer()
         {
             var tcpPort = _uniqueValues.NextTcpPort();
-            var client = new IpcHostClient(tcpPort);
+            var client = new Hosted.Client.IpcHost(tcpPort);
             await Assert.ThrowsAnyAsync<SocketException>(() => client.Start());
         }
 

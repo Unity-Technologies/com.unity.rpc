@@ -21,8 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Client\Unity.Ipc.Client.csproj" />
-    <ProjectReference Include="..\..\..\src\com.unity.ipc\Unity.Ipc.csproj" />
+    <ProjectReference Include="..\..\..\src\Unity.Ipc.Hosted.Client\Unity.Ipc.Hosted.Client.csproj" />
     <ProjectReference Include="..\MyClient\MyClient.csproj" />
   </ItemGroup>
 

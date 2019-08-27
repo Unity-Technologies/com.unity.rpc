@@ -4,9 +4,9 @@ using Microsoft.Extensions.Hosting;
 
 namespace Unity.Ipc
 {
-    public class ServerConfiguration : Configuration
+    public class HostedConfiguration : Unity.Ipc.Configuration
     {
-        public ServerConfiguration Configure(HostBuilderContext context, IServiceCollection services)
+        public HostedConfiguration Configure(HostBuilderContext context, IServiceCollection services)
         {
             Port = context.Configuration.GetValue("port", DefaultPort);
             ProtocolVersion = IpcVersion.Parse(context.Configuration.GetValue("version", "1.0"));

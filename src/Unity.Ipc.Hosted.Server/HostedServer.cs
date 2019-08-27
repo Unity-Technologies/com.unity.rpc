@@ -4,14 +4,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Unity.Ipc
+namespace Unity.Ipc.Hosted.Server
 {
     using Logging;
-    using Extensions;
 
-    public class HostedServer : IHostedService, IDisposable
+    public class HostedServer : IHostedService, IIpcHost
     {
-        private readonly ServerConfiguration configuration;
+        private readonly HostedConfiguration configuration;
         private readonly IServiceProvider serviceProvider;
         private readonly IApplicationLifetime application;
         private readonly ILog logger = LogProvider.GetCurrentClassLogger();
@@ -19,17 +18,18 @@ namespace Unity.Ipc
         private readonly TaskCompletionSource<bool> stopTask = new TaskCompletionSource<bool>();
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
         private readonly DisposableDictionary<string, Ipc> clients = new DisposableDictionary<string, Ipc>();
+        private readonly IpcServer server;
 
-        public IpcServer Server { get; }
+        public Ipc Ipc { get; } = null;
 
         public Task Completion => stopTask.Task;
 
-        public HostedServer(ServerConfiguration configuration, IServiceProvider serviceProvider, IApplicationLifetime application)
+        public HostedServer(HostedConfiguration configuration, IServiceProvider serviceProvider, IApplicationLifetime application)
         {
             this.configuration = configuration;
             this.serviceProvider = serviceProvider;
             this.application = application;
-            Server = new IpcServer(configuration, cts.Token);
+            server = new IpcServer(configuration, cts.Token);
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace Unity.Ipc
         {
             try
             {
-                var startTask = Server.Connect();
+                var startTask = server.Connect();
 
                 // wait until the server finishes initializing
                 await Task.WhenAny(startTask, Task.Delay(100, cancellationToken));
@@ -73,13 +73,13 @@ namespace Unity.Ipc
         {
             try
             {
-                Server.OnClientConnect += (sender, client) => HandleClientConnection(client);
-                Server.OnClientDisconnect += (sender, client) =>
+                server.OnClientConnect += (sender, client) => HandleClientConnection(client);
+                server.OnClientDisconnect += (sender, client) =>
                 {
                     clients.TryRemove(client.Id, out _);
                     logger.Trace("Client " + client.Id + " disconnected");
                 };
-                await Task.WhenAny(Server.Run(), Task.Delay(-1, cancellationToken));
+                await Task.WhenAny(server.Run(), Task.Delay(-1, cancellationToken));
 
                 // we're done with shutting down
                 stopTask.TrySetResult(true);

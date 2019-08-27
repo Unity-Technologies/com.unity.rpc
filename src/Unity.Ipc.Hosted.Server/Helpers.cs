@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
-namespace Unity.Ipc.Extensions
+namespace Unity.Ipc.Hosted.Server
 {
     static class HelperExtensions
     {

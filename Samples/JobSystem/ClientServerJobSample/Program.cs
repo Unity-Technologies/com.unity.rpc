@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +15,8 @@ using NLog.Targets.Wrappers;
 using Unity.Ipc;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using LogLevel = NLog.LogLevel;
+using IpcServerHost = Unity.Ipc.Hosted.Server.IpcHost;
+using IpcClientHost = Unity.Ipc.Hosted.Client.IpcHost;
 
 namespace ClientServerJobSample
 {
@@ -29,7 +30,7 @@ namespace ClientServerJobSample
             var serverHost = ConfigureServer(cts);
 
             await serverHost.Start(cts.Token);
-            ThreadPool.QueueUserWorkItem(s => ((IpcHost)s).Run(), serverHost);
+            ThreadPool.QueueUserWorkItem(s => ((IpcServerHost)s).Run(), serverHost);
 
             var clientHost = ConfigureClient();
 
@@ -63,9 +64,9 @@ namespace ClientServerJobSample
 
         }
 
-        private static IpcHostClient ConfigureClient()
+        private static IpcClientHost ConfigureClient()
         {
-            var clientHost = new IpcHostClient(29000, IpcVersion.Parse("1.1"));
+            var clientHost = new IpcClientHost(29000, IpcVersion.Parse("1.1"));
             clientHost.Configuration.AddLocalTarget<JobClientService>();
             clientHost.Configuration.AddRemoteTarget<IJobServerService>();
 
@@ -76,9 +77,9 @@ namespace ClientServerJobSample
             return clientHost;
         }
 
-        private static IpcHost ConfigureServer(CancellationTokenSource cts)
+        private static IpcServerHost ConfigureServer(CancellationTokenSource cts)
         {
-            var serverHost = new IpcHost(29000, IpcVersion.Parse("1.1"));
+            var serverHost = new IpcServerHost(29000, IpcVersion.Parse("1.1"));
             serverHost.Configuration.AddLocalTarget<JobServerSession>();
             serverHost.Configuration.AddRemoteTarget<IJobClientService>();
 

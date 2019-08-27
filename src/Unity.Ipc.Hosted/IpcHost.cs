@@ -7,11 +7,13 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Unity.Ipc.Extensions;
 
-namespace Unity.Ipc
+namespace Unity.Ipc.Hosted
 {
-    public class IpcHostClient : HostBuilder
+    using Extensions;
+
+    public class IpcHost<T> : HostBuilder
+        where T : class, IHostedService
     {
         private const string AppSettingsFile = "appsettings.json";
         public Configuration Configuration { get; }
@@ -19,11 +21,10 @@ namespace Unity.Ipc
         public IApplicationLifetime ApplicationLifetime => ServiceProvider.GetRequiredService<IApplicationLifetime>();
 
         private IHost host;
-        private readonly CancellationTokenSource cts = new CancellationTokenSource();
         private CancellationToken? cancellationToken;
         private bool started = false;
 
-        public IpcHostClient(int port = 0, IpcVersion protocolVersion = default)
+        public IpcHost(int port = 0, IpcVersion protocolVersion = default)
         {
             var defaultConfiguration = new Dictionary<string, string>();
             if (port > 0)
@@ -31,7 +32,7 @@ namespace Unity.Ipc
             if (protocolVersion != IpcVersion.Default)
                 defaultConfiguration.Add("version", protocolVersion.ToString());
 
-            Configuration = new ClientConfiguration();
+            Configuration = new HostedConfiguration();
 
             this
                 .UseContentRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
@@ -49,25 +50,30 @@ namespace Unity.Ipc
 
         public new IHost Build()
         {
-            ConfigureServices((context, s) =>
-            {
-                s.AddSingleton(((ClientConfiguration)Configuration).Configure(context, s));
-                s.AddSingleton<IHostedService, HostedClient>();
-            });
+            InternalBuild();
             return base.Build();
         }
 
-        public async Task<IpcClient> Start()
+        protected virtual void InternalBuild()
+        {
+            ConfigureServices((context, s) =>
+            {
+                s.AddSingleton(((HostedConfiguration)Configuration).Configure(context, s));
+                s.AddSingleton<IHostedService, T>();
+            });
+        }
+
+        public async Task<Ipc> Start()
         {
             return await InternalStart();
         }
 
-        public async Task<IpcClient> Start(CancellationToken token)
+        public async Task<Ipc> Start(CancellationToken token)
         {
             return await InternalStart(token);
         }
 
-        private async Task<IpcClient> InternalStart(CancellationToken? token = null)
+        private async Task<Ipc> InternalStart(CancellationToken? token = null)
         {
             cancellationToken = token;
             host = Build();
@@ -76,7 +82,7 @@ namespace Unity.Ipc
             else
                 await host.StartAsync();
             started = true;
-            return ServiceProvider.GetHostedService<HostedClient>().Client;
+            return ServiceProvider.GetHostedService<IIpcHost>().Ipc;
         }
 
         public Task Run()

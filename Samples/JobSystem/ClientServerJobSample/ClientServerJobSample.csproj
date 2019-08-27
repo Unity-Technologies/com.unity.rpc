@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Client\Unity.Ipc.Client.csproj" />
-    <ProjectReference Include="..\..\..\src\Server\Unity.Ipc.Server.csproj" />
+    <ProjectReference Include="..\..\..\src\Unity.Ipc.Hosted.Client\Unity.Ipc.Hosted.Client.csproj" />
+    <ProjectReference Include="..\..\..\src\Unity.Ipc.Hosted.Server\Unity.Ipc.Hosted.Server.csproj" />
     <ProjectReference Include="..\BasicJob\BasicJob.csproj" />
     <ProjectReference Include="..\JobClient\JobClient.csproj" />
     <ProjectReference Include="..\JobServer\JobServer.csproj" />

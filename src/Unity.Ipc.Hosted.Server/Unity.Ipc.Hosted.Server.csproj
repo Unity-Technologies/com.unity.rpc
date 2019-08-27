@@ -2,11 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net471;netcoreapp2.2</TargetFrameworks>
-    <OutputType>Library</OutputType>
-    <ApplicationIcon />
-    <StartupObject />
-    <RootNamespace>Unity.Ipc</RootNamespace>
-    <AssemblyName>Unity.Ipc.Server</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,5 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\com.unity.ipc\Unity.Ipc.csproj" />
+    <ProjectReference Include="..\Unity.Ipc.Hosted\Unity.Ipc.Hosted.csproj" />
   </ItemGroup>
 </Project>

@@ -9,6 +9,7 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using Unity.Ipc;
+using Unity.Ipc.Hosted.Client;
 using Logger = Serilog.Core.Logger;
 
 namespace ClientCLI
@@ -29,7 +30,7 @@ namespace ClientCLI
                                               .CreateLogger();
 
 
-            var host = new IpcHostClient(Configuration.DefaultPort, IpcVersion.Parse("1.0"));
+            var host = new IpcHost(Configuration.DefaultPort, IpcVersion.Parse("1.0"));
             host.Configuration.AddLocalTarget<MyClient.MyClient>();
             host.Configuration.AddRemoteTarget<IMyServer>();
 

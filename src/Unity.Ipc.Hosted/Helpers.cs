@@ -11,7 +11,7 @@ namespace Unity.Ipc.Extensions
         public static void Forget(this Task task) { }
     }
 
-    public static class HostExtensions
+    static class HostExtensions
     {
         public static T GetHostedService<T>(this IServiceProvider serviceProvider) where T : class =>
             serviceProvider.GetServices<IHostedService>().FirstOrDefault(x => x is T) as T;

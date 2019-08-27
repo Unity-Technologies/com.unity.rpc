@@ -14,8 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Server\Unity.Ipc.Server.csproj" />
-    <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\src\Unity.Ipc.Hosted.Server\Unity.Ipc.Hosted.Server.csproj" />
     <ProjectReference Include="..\MyServer\MyServer.csproj" />
   </ItemGroup>
 

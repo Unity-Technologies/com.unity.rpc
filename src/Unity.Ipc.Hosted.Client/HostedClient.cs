@@ -1,29 +1,26 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Unity.Ipc.Extensions;
 
-namespace Unity.Ipc
+namespace Unity.Ipc.Hosted.Client
 {
-
-    public class HostedClient : IHostedService, IDisposable
+    public class HostedClient : IHostedService, IIpcHost
     {
-        private readonly ClientConfiguration configuration;
+        private readonly HostedConfiguration configuration;
         private readonly IServiceProvider serviceProvider;
         private readonly TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
+        private readonly IpcClient client;
 
-        public IpcClient Client { get; }
+        public Ipc Ipc => client;
 
-        public HostedClient(ClientConfiguration configuration, IServiceProvider serviceProvider)
+        public HostedClient(HostedConfiguration configuration, IServiceProvider serviceProvider)
         {
             this.configuration = configuration;
             this.serviceProvider = serviceProvider;
-            Client = new IpcClient(configuration, cts.Token);
+            client = new IpcClient(configuration, cts.Token);
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -42,27 +39,27 @@ namespace Unity.Ipc
         {
             try
             {
-                await Client.Connect();
+                await client.Connect();
 
                 // Get all the previously registered instances that can receive calls and add them as rpc targets
-                Client.RegisterLocalTargets((ILocalTargets)serviceProvider.GetService(typeof(ILocalTargets)));
+                client.RegisterLocalTargets((ILocalTargets)serviceProvider.GetService(typeof(ILocalTargets)));
 
                 using (var scope = serviceProvider.CreateScope())
                 {
-                    Client.RegisterRemoteTargets(configuration.RemoteTypes);
+                    client.RegisterRemoteTargets(configuration.RemoteTypes);
                     var remoteTargets = (IRequestContext)scope.ServiceProvider.GetService(typeof(IRequestContext));
-                    remoteTargets.AddTargets(Client.RemoteTargets);
+                    remoteTargets.AddTargets(client.RemoteTargets);
 
                     // Get or instantiate all the IPC targets that were registered, and add them
                     // as local targets so they can receive rpc calls
                     foreach (var t in configuration.LocalTypes)
                     {
                         var obj = scope.ServiceProvider.GetService(t);
-                        Client.RegisterLocalTarget(obj);
+                        client.RegisterLocalTarget(obj);
                     }
                 }
 
-                var serverVersion = await Client.Start();
+                var serverVersion = await client.Start();
                 if (serverVersion != configuration.ProtocolVersion)
                     throw new ProtocolVersionMismatchException(configuration.ProtocolVersion, serverVersion);
                 tcs.SetResult(true);
@@ -81,7 +78,7 @@ namespace Unity.Ipc
                 return;
             if (disposing)
             {
-                Client?.Dispose();
+                client?.Dispose();
             }
             disposed = true;
         }

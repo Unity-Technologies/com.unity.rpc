@@ -6,6 +6,7 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using Unity.Ipc;
+using Unity.Ipc.Hosted.Server;
 
 namespace ServerApp
 {
