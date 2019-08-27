@@ -3,13 +3,14 @@ using System.Collections.Concurrent;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
-using ServerImplementation.Logging;
-using TestApp;
+using Interfaces;
 using Unity.Ipc;
 
-namespace ServerImplementation
+namespace MyServer
 {
-    public class ServerMessageImplementation : IMyServer
+    using Logging;
+
+    public class MyServer : IMyServer
     {
         private readonly IRequestContext context;
         private IMyClient Client => context.Get<IMyClient>();
@@ -22,13 +23,15 @@ namespace ServerImplementation
         public event EventHandler<bool> ThingDone;
 
 
-        public ServerMessageImplementation(IRequestContext context)
+        public MyServer(IRequestContext context)
         {
             this.context = context;
         }
 
         public async Task<string> StartJob(string id)
         {
+            logger.Debug($"Starting job {id}");
+
             jobs.TryAdd(id, new TaskCompletionSource<bool>());
             var progressFlag = new ManualResetEventSlim();
             var finishedFlag = new ManualResetEventSlim();
@@ -58,6 +61,8 @@ namespace ServerImplementation
                         finishedFlag.Wait(100, cts.Token);
                 }
 
+                progress.Enqueue(null);
+                progressFlag.Set();
                 finishedFlag.Wait(cts.Token);
 
                 if (jobs.TryGetValue(id, out var t))

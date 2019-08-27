@@ -1,18 +1,17 @@
-﻿using System;
-using System.Linq;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using ClientApp;
+using Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
-using TestApp;
 using Unity.Ipc;
 using Logger = Serilog.Core.Logger;
 
-namespace ClientApp
+namespace ClientCLI
 {
     class Program
     {
@@ -30,8 +29,8 @@ namespace ClientApp
                                               .CreateLogger();
 
 
-            var host = new IpcHostClient(Configuration.DefaultPort, IpcVersion.Parse("1.1"));
-            host.Configuration.AddLocalTarget<Receiver>();
+            var host = new IpcHostClient(Configuration.DefaultPort, IpcVersion.Parse("1.0"));
+            host.Configuration.AddLocalTarget<MyClient.MyClient>();
             host.Configuration.AddRemoteTarget<IMyServer>();
 
             host.UseSerilog(logger)
@@ -50,7 +49,7 @@ namespace ClientApp
 
         private static async Task Run(IpcClient host, CancellationToken token)
         {
-            var server = host.GetLocalTarget<Receiver>();
+            var server = host.GetLocalTarget<MyClient.MyClient>();
             while (!token.IsCancellationRequested)
             {
                 var ret = await server.StartJob();

@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Interfaces;
 using Microsoft.Extensions.Logging;
-using TestApp;
 using Unity.Ipc;
 
-namespace ClientApp
+namespace MyClient
 {
-    class Receiver : IMyClient
+    public class MyClient : IMyClient
     {
         private readonly ILogger logger;
         private Dictionary<string, TaskCompletionSource<bool>> jobs = new Dictionary<string, TaskCompletionSource<bool>>();
         private readonly IMyServer server;
 
-        public Receiver(IRequestContext remoteTargets, ILogger<Receiver> logger)
+        public MyClient(IRequestContext remoteTargets, ILogger<MyClient> logger)
         {
             this.logger = logger;
             server = remoteTargets.Get<IMyServer>();

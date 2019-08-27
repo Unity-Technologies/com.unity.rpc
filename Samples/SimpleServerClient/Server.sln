@@ -7,11 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Unity.Ipc", "..\..\src\com.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Unity.Ipc.Server", "..\..\src\Server\Unity.Ipc.Server.csproj", "{A1FA4A8E-4142-4EC4-87CC-4EE6A19E22E2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageData", "MessageData\MessageData.csproj", "{672F933A-91E7-4A1D-80E7-D683E1F9CA38}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Interfaces", "MessageData\Interfaces.csproj", "{672F933A-91E7-4A1D-80E7-D683E1F9CA38}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerCLI", "ServerCLI\ServerCLI.csproj", "{B8E2D7FC-3466-4A77-A5EF-7B06D22E75F3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerImplementation", "ServerImplementation\ServerImplementation.csproj", "{84222269-BA15-4DC0-A206-C99E8094EC77}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "ServerImplementation\Server.csproj", "{84222269-BA15-4DC0-A206-C99E8094EC77}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Interfaces;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
-using ServerImplementation;
-using TestApp;
 using Unity.Ipc;
 
 namespace ServerApp
@@ -19,8 +18,8 @@ namespace ServerApp
                 MinimumLevel = LogEventLevel.Verbose
             };
 
-            var host = new IpcHost();
-            host.Configuration.AddLocalTarget<ServerMessageImplementation>();
+            var host = new IpcHost(Configuration.DefaultPort, IpcVersion.Parse("1.0"));
+            host.Configuration.AddLocalTarget<MyServer.MyServer>();
             host.Configuration.AddRemoteTarget<IMyClient>();
 
             host.UseSerilog((context, config) =>
