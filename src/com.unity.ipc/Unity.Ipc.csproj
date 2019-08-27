@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="StreamRpc" Version="2.1.49-beta" />
+    <PackageReference Include="StreamRpc" Version="2.1.50-beta" />
   </ItemGroup>
 
 </Project>
