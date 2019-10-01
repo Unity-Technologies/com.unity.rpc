@@ -7,15 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CXuesong.JsonRpc.Commons" Version="0.5.2-int1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="1.4.0" />
+    <PackageReference Include="NLog.Extensions.Hosting" Version="1.5.2" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.5.2" />
     <PackageReference Include="NLog.Targets.Seq" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Unity.Ipc.Hosted.Client\Unity.Ipc.Hosted.Client.csproj" />
+    <ProjectReference Include="..\..\..\src\Unity.Ipc.Hosted.Server\Unity.Ipc.Hosted.Server.csproj" />
     <ProjectReference Include="..\BasicJob\BasicJob.csproj" />
     <ProjectReference Include="..\JobClient\JobClient.csproj" />
     <ProjectReference Include="..\JobServer\JobServer.csproj" />

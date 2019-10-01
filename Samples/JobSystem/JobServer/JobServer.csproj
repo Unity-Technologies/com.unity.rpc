@@ -5,7 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Unity.Ipc.Server\Unity.Ipc.Server.csproj" />
+    <ProjectReference Include="..\..\..\src\com.unity.ipc\Unity.Ipc.csproj" />
+    <ProjectReference Include="..\BasicJob\BasicJob.csproj" />
+    <ProjectReference Include="..\JobBase\JobBase.csproj" />
   </ItemGroup>
 
 </Project>

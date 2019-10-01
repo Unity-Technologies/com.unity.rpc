@@ -5,16 +5,18 @@ using System.Threading.Tasks;
 using JobClient;
 using JobServer;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Config;
 using NLog.Extensions.Logging;
 using NLog.Targets.Seq;
 using NLog.Targets.Wrappers;
-using Unity.Ipc.Client;
-using Unity.Ipc.Server;
+using Unity.Ipc;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using LogLevel = NLog.LogLevel;
+using IpcServerHost = Unity.Ipc.Hosted.Server.IpcHost;
+using IpcClientHost = Unity.Ipc.Hosted.Client.IpcHost;
 
 namespace ClientServerJobSample
 {
@@ -22,55 +24,77 @@ namespace ClientServerJobSample
     {
         static async Task Main(string[] args)
         {
-            var serviceCollection = new ServiceCollection();
-            ConfigureServices(serviceCollection);
-
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-            var logger = serviceProvider.GetService<ILogger<Program>>();
-
-            var fileMutexPath = GetTemporaryDirectory();
+            var cts = new CancellationTokenSource();
             LogManager.Configuration = NLogConfigurator.ConfigureSeq(LogLevel.Debug);
 
-            using (var server = new IpcServer<JobServerService, JobServerSession>(fileMutexPath, logger))
-            {
-                var serverTask = server.StartLocalTcp("Test.Server", 29000, new IpcVersion(1, 0, 0, 0), () =>
-                {
-                    var jobServerSession = new JobServerSession();
-                    jobServerSession.RegisterDispatcher<BasicJob.BasicJob>("Unity.Basic.Job");
-                    return jobServerSession;
-                });
+            var serverHost = ConfigureServer(cts);
 
-                var client = new IpcClient<JobClientService>(fileMutexPath, new NLogClientIpcLogger(logger));
-                _ = await client.ConnectLocalTcp("Test.Server", 29000, 0, () =>
-                {
-                    var session = new JobClientSession();
+            await serverHost.Start(cts.Token);
+            ThreadPool.QueueUserWorkItem(s => ((IpcServerHost)s).Run(), serverHost);
 
-                    session.JobStatusChangedEventHandler += (sender, data) =>
-                    {
-                        logger?.LogInformation("[{threadId}] Job [{jobId}] - status changed to {status}", Thread.CurrentThread.ManagedThreadId, data.JobId, data.Data);
-                    };
+            var clientHost = ConfigureClient();
 
-                    session.JobProgressUpdatedEventHandler += (sender, data) =>
-                    {
-                        logger?.LogInformation("[{threadId}] Job [{jobId}] - in progress: {jobProgress}%", Thread.CurrentThread.ManagedThreadId, data.JobId, data.Data * 100);
-                    };
+            var ipcClient = await clientHost.Start(cts.Token);
+            var logger = clientHost.ServiceProvider.GetService<ILogger<Program>>();
 
-                    session.JobCompletedEventHandler += (sender, data) =>
-                    {
-                        logger?.LogInformation("[{threadId}] Job [{jobId}] - job completed with status", Thread.CurrentThread.ManagedThreadId, data.JobId, data.Data.ToString());
-                    };
+            var client = ipcClient.GetLocalTarget<JobClientService>();
+            client.JobStatusChangedEventHandler += (sender, data) => {
+                logger?.LogInformation("[{threadId}] Job [{jobId}] - status changed to {status}",
+                    Thread.CurrentThread.ManagedThreadId, data.JobId, data.Data);
+            };
 
-                    return session;
-                });
+            client.JobProgressUpdatedEventHandler += (sender, data) => {
+                logger?.LogInformation("[{threadId}] Job [{jobId}] - in progress: {jobProgress}%",
+                    Thread.CurrentThread.ManagedThreadId, data.JobId, data.Data * 100);
+            };
 
-                var jobId = await client.CreateJob("Unity.Basic.Job", $"Job-{Guid.NewGuid()}", CancellationToken.None);
-                var res = await client.StartJob(jobId, CancellationToken.None);
+            client.JobCompletedEventHandler += (sender, data) => {
+                logger?.LogInformation("[{threadId}] Job [{jobId}] - job completed with status",
+                    Thread.CurrentThread.ManagedThreadId, data.JobId, data.Data.ToString());
+            };
 
-                jobId = await client.CreateJob("Unity.Basic.Job", $"Job-{Guid.NewGuid()}", CancellationToken.None);
-                res = await client.StartJob(jobId, CancellationToken.None);
 
-                Console.ReadLine();
-            }
+            var jobid = await client.CreateJob("Unity.Basic.Job", $"job-{Guid.NewGuid()}", cts.Token);
+            var res = await client.StartJob(jobid, cts.Token);
+
+            jobid = await client.CreateJob("Unity.Basic.Job", $"job-{Guid.NewGuid()}", cts.Token);
+            res = await client.StartJob(jobid, cts.Token);
+
+            await clientHost.Run();
+
+        }
+
+        private static IpcClientHost ConfigureClient()
+        {
+            var clientHost = new IpcClientHost(29000, IpcVersion.Parse("1.1"));
+            clientHost.Configuration.AddLocalTarget<JobClientService>();
+            clientHost.Configuration.AddRemoteTarget<IJobServerService>();
+
+            clientHost
+                .UseConsoleLifetime()
+                .ConfigureServices((context, services) => ConfigureServices(services))
+                ;
+            return clientHost;
+        }
+
+        private static IpcServerHost ConfigureServer(CancellationTokenSource cts)
+        {
+            var serverHost = new IpcServerHost(29000, IpcVersion.Parse("1.1"));
+            serverHost.Configuration.AddLocalTarget<JobServerSession>();
+            serverHost.Configuration.AddRemoteTarget<IJobClientService>();
+
+            serverHost
+                .UseConsoleLifetime()
+                .ConfigureServices((context, services) => {
+                    ConfigureServices(services);
+
+                    var serverService = new JobServerService(cts.Token);
+                    serverService.RegisterDispatcher<BasicJob.BasicJob>("Unity.Basic.Job");
+                    services.AddSingleton(serverService);
+                })
+                ;
+
+            return serverHost;
         }
 
         public static string GetTemporaryDirectory()
@@ -80,29 +104,27 @@ namespace ClientServerJobSample
             return tempDirectory;
         }
 
-        private static void ConfigureServices(ServiceCollection services)
+        private static void ConfigureServices(IServiceCollection services)
         {
-            services.AddLogging(configure => configure.AddConsole().AddNLog()).Configure<LoggerFilterOptions>(options => options.MinLevel = Microsoft.Extensions.Logging.LogLevel.Debug);
+            services.AddLogging(configure => configure.AddConsole().AddNLog()).Configure<LoggerFilterOptions>(options =>
+                options.MinLevel = Microsoft.Extensions.Logging.LogLevel.Debug);
         }
     }
+
     public static class NLogConfigurator
     {
-        public static LoggingConfiguration ConfigureSeq(NLog.LogLevel level, string url = "http://localhost:5341", string apiKey = "", int bufferSize = 1000, int flushTimeout = 2000)
+        public static LoggingConfiguration ConfigureSeq(NLog.LogLevel level,
+            string url = "http://localhost:5341",
+            string apiKey = "",
+            int bufferSize = 1000,
+            int flushTimeout = 2000)
         {
             // Step 1. Create configuration object
             var config = new LoggingConfiguration();
-            var seqTarget = new SeqTarget
-            {
-                ServerUrl = url,
-                ApiKey = apiKey
-            };
+            var seqTarget = new SeqTarget { ServerUrl = url, ApiKey = apiKey };
 
-            var bufferWrapper = new BufferingTargetWrapper
-            {
-                Name = "seq",
-                BufferSize = bufferSize,
-                FlushTimeout = flushTimeout,
-                WrappedTarget = seqTarget
+            var bufferWrapper = new BufferingTargetWrapper {
+                Name = "seq", BufferSize = bufferSize, FlushTimeout = flushTimeout, WrappedTarget = seqTarget
             };
 
             config.AddTarget(bufferWrapper);
@@ -117,7 +139,8 @@ namespace ClientServerJobSample
             return config;
         }
     }
-    public class NLogClientIpcLogger : IIpcClientLogger
+
+    public class NLogClientIpcLogger
     {
         private readonly ILogger _logger;
 
@@ -125,6 +148,7 @@ namespace ClientServerJobSample
         {
             _logger = logger;
         }
+
         public void LogError(Exception exception, string message, params object[] args)
         {
             _logger.LogError(0, exception, message, args);
@@ -154,5 +178,11 @@ namespace ClientServerJobSample
         {
             _logger.LogInformation(message, args);
         }
+    }
+
+    static class HelperExtensions
+    {
+        public static void Forget(this Task task)
+        { }
     }
 }

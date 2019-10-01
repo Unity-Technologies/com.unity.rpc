@@ -2,71 +2,96 @@
 using System.Threading;
 using System.Threading.Tasks;
 using JobServer;
-using JsonRpc.Contracts;
-using JsonRpc.Server;
-using Newtonsoft.Json.Linq;
-using Unity.Ipc.Client;
+using Unity.Ipc;
 
 namespace JobClient
 {
-    public class JobClientService : IpcClientService
+    public class JobEventData<T>
     {
-        private JobClientSession Session => RequestContext.Features.Get<JobClientSession>();
-
-        public JobClientService()
+        public JobEventData(int jobId, T data)
         {
+            JobId = jobId;
+            Data = data;
         }
 
-        [JsonRpcMethod]
-        public Task<bool> UpdateJobProgress(int jobId, float jobProgress)
-        {
-            return Session.UpdateJobProgress(jobId, jobProgress);
-        }
-
-        [JsonRpcMethod]
-        public Task<bool> JobCompleted(int jobId, JobCompletion jobCompletion, DateTime jobCompletedTime)
-        {
-            return Session.JobCompleted(jobId, jobCompletion, jobCompletedTime);
-        }
+        public int JobId { get; }
+        public T Data { get; }
     }
 
-    public static class JobClientServiceExtensions
+    public class JobClientService : IJobClientService, IDisposable
     {
-        public static async Task<int> CreateJob(this IpcClient<JobClientService> client, string jobDispatcherUniqueName, string uniqueJobName, CancellationToken cancellationToken)
+        private readonly IRequestContext context;
+        private IJobServerService Server => context.Get<IJobServerService>();
+        public event EventHandler<JobEventData<JobStatus>> JobStatusChangedEventHandler;
+        public event EventHandler<JobEventData<float>> JobProgressUpdatedEventHandler;
+        public event EventHandler<JobEventData<JobCompletion>> JobCompletedEventHandler;
+
+        public JobClientService(IRequestContext context)
         {
-            var jobId = await client.ExecRequest<int>("createJob", JToken.FromObject(new { jobDispatcherUniqueName, uniqueJobName }), cancellationToken);
+            this.context = context;
+        }
 
-            if (jobId!=-1)
+        public async Task<int> CreateJob(string jobDispatcherUniqueName, string uniqueJobName, CancellationToken cancellationToken)
+        {
+            (int jobId, bool success) = await Server.CreateJob(jobDispatcherUniqueName, uniqueJobName).Await(cancellationToken);
+            if (success && jobId != -1)
             {
-                var session = client.GetSession<JobClientSession>();
-                session.OnJobStatusChanged(jobId, JobStatus.Created);
+                OnJobStatusChanged(jobId, JobStatus.Created);
             }
-
             return jobId;
         }
 
-        public static async Task<bool> StartJob(this IpcClient<JobClientService> client, int jobId, CancellationToken cancellationToken)
+        public async Task<bool> StartJob(int jobId, CancellationToken cancellationToken)
         {
-            var jr = await client.ExecRequest<bool>("startJob", JToken.FromObject(new { jobId }), cancellationToken);
-            if (jr)
+            (bool jr, bool success) = await Server.StartJob(jobId).Await(cancellationToken);
+            if (success && jr)
             {
-                var session = client.GetSession<JobClientSession>();
-                session.OnJobStatusChanged(jobId, JobStatus.Running);
+                OnJobStatusChanged(jobId, JobStatus.Running);
             }
             return jr;
         }
 
-        public static async Task<bool> CancelJob(this IpcClient<JobClientService> client, int jobId, CancellationToken cancellationToken)
+        public async Task<bool> CancelJob(int jobId, CancellationToken cancellationToken)
         {
-            var jr = await client.ExecRequest<bool>("cancelJob", JToken.FromObject(new { jobId }), cancellationToken);
-            if (jr)
+            (bool jr, bool success) = await Server.CancelJob(jobId).Await(cancellationToken);
+            if (success && jr)
             {
-                var session = client.GetSession<JobClientSession>();
-                session.OnJobStatusChanged(jobId, JobStatus.Completed);
-                session.OnJobCompleted(jobId, JobCompletion.Cancelled);
+                OnJobStatusChanged(jobId, JobStatus.Completed);
+                OnJobCompleted(jobId, JobCompletion.Cancelled);
             }
             return jr;
+        }
+
+        public virtual Task<bool> JobCompleted(int jobId, JobCompletion jobCompletion, DateTime jobCompletedTime)
+        {
+            OnJobStatusChanged(jobId, JobStatus.Completed);
+            OnJobCompleted(jobId, jobCompletion);
+            return Task.FromResult(true);
+        }
+
+        public virtual Task<bool> UpdateJobProgress(int jobId, float jobProgress)
+        {
+            OnJobProgressUpdated(jobId, jobProgress);
+            return Task.FromResult(true);
+        }
+
+        internal void OnJobStatusChanged(int jobId, JobStatus jobStatus)
+        {
+            JobStatusChangedEventHandler?.Invoke(this, new JobEventData<JobStatus>(jobId, jobStatus));
+        }
+
+        internal void OnJobProgressUpdated(int jobId, float jobProgress)
+        {
+            JobProgressUpdatedEventHandler?.Invoke(this, new JobEventData<float>(jobId, jobProgress));
+        }
+
+        internal void OnJobCompleted(int jobId, JobCompletion jobCompletion)
+        {
+            JobCompletedEventHandler?.Invoke(this, new JobEventData<JobCompletion>(jobId, jobCompletion));
+        }
+
+        public void Dispose()
+        {
         }
     }
-
 }

@@ -1,0 +1,62 @@
+platforms:
+  - name: win
+    type: Unity::VM
+    image: sdet/gamecode_win10:stable
+    flavor: m1.large
+  - name: macOS
+    type: Unity::VM::osx
+    image: buildfarm/mac:stable
+    flavor: m1.mac
+  - name: Linux
+    type: Unity::VM
+    image: yamato/ubuntu-18.04-dotnet:latest
+    flavor: b1.small
+---
+build:
+  name: Build Dependencies
+  agent:
+    type: Unity::VM
+    image: sdet/gamecode_win10:latest
+    flavor: m1.large
+  commands:
+    - nuget restore
+    - dotnet restore
+    - dotnet msbuild Unity.Ipc.sln
+  artifacts:
+    compiler:
+      paths: 
+        - "**/bin/Debug/*"
+
+{% for platform in platforms %}
+test_{{ platform.name }}:
+  name: Run Tests on {{ platform.name }}
+  agent:
+    type: {{ platform.type }}
+    image: {{ platform.image }}
+    flavor: {{ platform.flavor}}
+  commands:
+    - dotnet restore
+    - dotnet test
+    - nuget install xunit.runner.console
+    - .\xunit.runner.console.2.4.1\tools\net461\xunit.console.exe Unity.Ipc.Tests\bin\Debug\Unity.Ipc.Tests.dll
+  dependencies:
+    - .yamato/CI.yml#build
+{% endfor %}
+
+commit_ci:
+  name: CI Per Commit
+  agent:
+    name: whatever
+    type: Unity::VM
+    image: cds-ops/ubuntu-18.04-agent:latest
+    flavor: b1.small
+  commands:
+    - dir
+  triggers:
+    branches:
+      only:
+      - "/.*/"
+  dependencies:
+  {% for platform in platforms %}
+  - .yamato/CI.yml#test_{{ platform.name }}
+  {% endfor %}
