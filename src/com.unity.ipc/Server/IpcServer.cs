@@ -22,23 +22,6 @@ namespace Unity.Ipc
         {
             this.configuration = configuration;
             this.token = token;
-
-            CompositeResolver.RegisterAndSetAsDefault(
-                BuiltinResolver.Instance,
-                AttributeFormatterResolver.Instance,
-
-                // replace enum resolver
-                DynamicEnumAsStringResolver.Instance,
-
-                DynamicGenericResolver.Instance,
-                DynamicUnionResolver.Instance,
-                DynamicObjectResolver.Instance,
-
-                PrimitiveObjectResolver.Instance,
-
-                // final fallback(last priority)
-                DynamicContractlessObjectResolver.Instance
-            );
         }
 
         /// <summary>

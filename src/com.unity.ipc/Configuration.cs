@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using MessagePack;
+using MessagePack.Resolvers;
 
 namespace Unity.Ipc
 {
@@ -12,6 +14,46 @@ namespace Unity.Ipc
 
         public IEnumerable<Type> LocalTypes { get; } = new List<Type>();
         public IEnumerable<Type> RemoteTypes { get; } = new List<Type>();
+
+        private static IFormatterResolver[] defaultResolvers;
+
+        public static IFormatterResolver[] DefaultResolvers
+        {
+            get => defaultResolvers ?? (defaultResolvers = new[]
+            {
+                BuiltinResolver.Instance,
+                AttributeFormatterResolver.Instance,
+
+                // replace enum resolver
+                DynamicEnumAsStringResolver.Instance,
+
+                DynamicGenericResolver.Instance,
+                DynamicUnionResolver.Instance,
+                DynamicObjectResolver.Instance,
+
+                PrimitiveObjectResolver.Instance,
+
+                ContractlessStandardResolver.Instance,
+
+                // final fallback(last priority)
+                DynamicContractlessObjectResolver.Instance
+            });
+            set => defaultResolvers = value;
+        }
+
+        /// <summary>
+        /// The default constructor registers a set of default resolvers for
+        /// message pack serialization. If you want to change the defaults,
+        /// set <see cref="DefaultResolvers"/>
+        /// </summary>
+        public Configuration() : this(DefaultResolvers)
+        {
+        }
+
+        public Configuration(params IFormatterResolver[] resolvers)
+        {
+            CompositeResolver.RegisterAndSetAsDefault(resolvers);
+        }
 
         /// <summary>
         /// Add type representing a remote proxy

@@ -24,7 +24,7 @@ namespace MyClient
             };
         }
 
-        public Task<string> StartJob()
+        public Task<JobData> StartJob()
         {
             string id = Guid.NewGuid().ToString();
             var job = new TaskCompletionSource<bool>();
@@ -32,9 +32,9 @@ namespace MyClient
             return server.StartJob(id);
         }
 
-        public Task WaitForJobDone(string id)
+        public Task WaitForJobDone(JobData id)
         {
-            return jobs[id].Task;
+            return jobs[id.ID].Task;
         }
 
         public Task ServerJobStarted(string id)

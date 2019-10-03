@@ -55,7 +55,7 @@ namespace ClientCLI
             {
                 var ret = await server.StartJob();
                 await server.WaitForJobDone(ret);
-                logger.Debug("Done " + ret);
+                logger.Debug("Done " + ret.ID);
             }
         }
     }

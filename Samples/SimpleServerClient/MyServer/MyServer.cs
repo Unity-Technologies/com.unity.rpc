@@ -28,7 +28,7 @@ namespace MyServer
             this.context = context;
         }
 
-        public async Task<string> StartJob(string id)
+        public async Task<JobData> StartJob(string id)
         {
             logger.Debug($"Starting job {id}");
 
@@ -41,7 +41,7 @@ namespace MyServer
             ThreadPool.QueueUserWorkItem(async _ => await DoWork(id, cts, progressFlag, finishedFlag));
 
             await Client.ServerJobStarted(id);
-            return id;
+            return new JobData { ID = id };
         }
 
         private async Task DoWork(string id, CancellationTokenSource cts,
