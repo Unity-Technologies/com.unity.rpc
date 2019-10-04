@@ -7,7 +7,7 @@ namespace Unity.Ipc
 {
     public class Configuration
     {
-        public const int DefaultPort = 59595;
+        public static int DefaultPort { get; set; } = 59595;
         public int Port { get; protected set; }
         public const string DefaultProtocolVersion = "1.0";
         public IpcVersion ProtocolVersion { get; protected set; }
