@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net471;netcoreapp2.2</TargetFrameworks>
+    <SolutionDir Condition=" '$(SolutionDir)' == '' ">..\..\..\</SolutionDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,8 +13,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\com.unity.ipc\Unity.Ipc.csproj" />
+    <ProjectReference Include="..\com.unity.ipc\Unity.Ipc\Unity.Ipc.csproj" />
     <ProjectReference Include="..\Unity.Ipc.Hosted\Unity.Ipc.Hosted.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(SolutionDir)LICENSE.md" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath=""/>
   </ItemGroup>
 
 </Project>

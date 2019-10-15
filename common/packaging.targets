@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PublishTo Condition="'$(PublishTo)' == '' ">$(SolutionDir)build\packages\</PublishTo>
+    <PackageSourceRoot>$(MSBuildProjectDirectory)\..\</PackageSourceRoot>
+    <PackageSourceRootFull>$([System.IO.Path]::GetFullPath($(PackageSourceRoot)))</PackageSourceRootFull>
+    <PackageName>$([System.IO.Path]::GetDirectoryName($(PackageSourceRootFull)))</PackageName>
+    <PackageName>$([System.IO.Path]::GetFileName($(PackageName)))</PackageName>
+    <PackageSubFolder>$([System.IO.Path]::GetFileName($(MSBuildProjectDirectory)))</PackageSubFolder>
+    <PackageSubFolder Condition="'$(PackageSubFolder)' == '$(PackageName)'">\</PackageSubFolder>
+    <PackageSubFolder Condition="'$(PackageSubFolder)' != '$(PackageName)'">\$(PackageSubFolder)\</PackageSubFolder>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SpoiledCat.MSBuild.Tasks.FileUpdate" Version="1.0.12" PrivateAssets="All" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <VersionFiles Include="$(IntermediateOutputPath)\$(AssemblyName).Version$(DefaultLanguageSourceExtension)" />
+  </ItemGroup>
+
+  <Target Name="EnumeratePackageFiles" Returns="@(FilesToCopy)">
+    <CreateItem Include="$(PackageSourceRoot)**\*.*;$(SolutionDir)\extras\$(PackageName)\**\*.*" Exclude="$(PackageSourceRoot)**\*.csproj*;$(PackageSourceRoot)**\*.ncrunch*;$(PackageSourceRoot)**\obj\**">
+      <Output TaskParameter="Include" ItemName="FilesToCopy" />
+    </CreateItem>
+  </Target>
+
+  <Target Name="CopySourcesToPackmanPackage"
+    DependsOnTargets="EnumeratePackageFiles"
+    AfterTargets="AfterBuild"
+    Inputs="@(FilesToCopy);@(VersionFiles)"
+    Outputs="@(FilesToCopy->'$(PublishTo)$(PackageName)\%(RecursiveDir)%(Filename)%(Extension)');@(VersionFiles->'$(PublishTo)$(PackageName)$(PackageSubFolder)%(Filename)%(Extension)')"
+    >
+
+    <MakeDir Directories="$(PublishTo)$(PackageName)" />
+
+    <Copy
+      SourceFiles="@(FilesToCopy)"
+      DestinationFiles="@(FilesToCopy->'$(PublishTo)$(PackageName)\%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true">
+      <Output TaskParameter="CopiedFiles" ItemName="FilesCopied" />
+    </Copy>
+
+    <Copy
+      SourceFiles="@(VersionFiles)"
+      DestinationFiles="@(VersionFiles->'$(PublishTo)$(PackageName)$(PackageSubFolder)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true" />
+
+  </Target>
+
+  <Target Name="CheckIfVersionChanged" BeforeTargets="GenerateAssemblyVersionInfo" AfterTargets="GetBuildVersion" Returns="$(VersionHasChanged)">
+    <PropertyGroup>
+      <VersionSourceFile>$(IntermediateOutputPath)\$(AssemblyName).Version$(DefaultLanguageSourceExtension)</VersionSourceFile>
+      <NewVersionSourceFile>$(VersionSourceFile).newnew</NewVersionSourceFile>
+    </PropertyGroup>
+    <MakeDir Directories="$(IntermediatePath)"/>
+    <Nerdbank.GitVersioning.Tasks.AssemblyVersionInfo
+                  OutputFile="$(NewVersionSourceFile)"
+                  CodeLanguage="$(Language)"
+                  AssemblyVersion="$(AssemblyVersion)"
+                  AssemblyFileVersion="$(AssemblyFileVersion)"
+                  AssemblyInformationalVersion="$(AssemblyInformationalVersion)"
+                  AssemblyName="$(AssemblyName)"
+                  RootNamespace="$(RootNamespace)"
+                  AssemblyOriginatorKeyFile="$(AssemblyOriginatorKeyFile)"
+                  AssemblyTitle="$(AssemblyTitle)"
+                  AssemblyProduct="$(AssemblyProduct)"
+                  AssemblyCopyright="$(AssemblyCopyright)"
+                  AssemblyCompany="$(AssemblyCompany)"
+                  AssemblyConfiguration="$(Configuration)"
+                  GitCommitId="$(GitCommitId)"
+                  GitCommitDateTicks="$(GitCommitDateTicks)"
+                  EmitNonVersionCustomAttributes="$(NBGV_EmitNonVersionCustomAttributes)"
+                  />
+    <!-- Avoid applying the newly generated AssemblyVersionInfo.cs file to the build
+         unless it has changed in order to allow for incremental building. -->
+    <Nerdbank.GitVersioning.Tasks.CompareFiles OriginalItems="$(VersionSourceFile)" NewItems="$(NewVersionSourceFile)">
+      <Output TaskParameter="AreChanged" PropertyName="VersionHasChanged" />
+    </Nerdbank.GitVersioning.Tasks.CompareFiles>
+  </Target>
+
+  <Target Name="StampPackageVersion" AfterTargets="CopySourcesToPackmanPackage">
+
+    <FileUpdate 
+      Files="$(PublishTo)$(PackageName)\package.json" 
+      Regex="&quot;version&quot;: &quot;.*&quot;" 
+      ReplacementText="&quot;version&quot;: &quot;$(NuGetPackageVersion)&quot;">
+      <Output TaskParameter="AllItemsUpdated" PropertyName="FileWasStamped" />
+    </FileUpdate>
+
+    <Message Importance="High" Text="Stamping version $(NuGetPackageVersion)" Condition=" '$(FileWasStamped)' == 'true' "/>
+
+    <FileUpdate 
+      Files="$(PublishTo)$(PackageName)\package.json" 
+      Regex="(&quot;com\.spoiledcat\..*&quot;): &quot;.*&quot;" 
+      ReplacementText="$1: &quot;$(NuGetPackageVersion)&quot;" 
+      Encoding="utf-8-without-bom" />
+
+    <FileUpdate 
+      Files="$(PublishTo)$(PackageName)\package.json" 
+      Regex="&quot;url&quot;: &quot;git@.*&quot;" 
+      ReplacementText="&quot;url&quot;: &quot;$(PackageProjectUrl)&quot;" 
+      Encoding="utf-8-without-bom" />
+
+    <FileUpdate 
+      Files="$(PublishTo)$(PackageName)\package.json" 
+      Regex="&quot;revision&quot;: &quot;.*&quot;" 
+      ReplacementText="&quot;revision&quot;: &quot;$(GitCommitId)&quot;" 
+      Encoding="utf-8-without-bom" />
+
+    <FileUpdate 
+      Files="$(PublishTo)$(PackageName)\CHANGELOG.md" 
+      Regex="## \[VERSION\] - DATE" 
+      ReplacementText="## [$(NuGetPackageVersion)] - $([System.DateTime]::Now.ToString(&quot;yyyy-MM-dd&quot;))" 
+      Encoding="utf-8-without-bom" />
+
+  </Target>
+
+</Project>

@@ -1,0 +1,36 @@
+<Project>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <LangVersion>7.3</LangVersion>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))..\</RepoRoot>
+    <RepoBuildPath>$(RepoRoot)build\</RepoBuildPath>
+    <RepoBinPath>$(RepoBuildPath)bin\</RepoBinPath>
+    <RepoObjPath>$(RepoBuildPath)obj\</RepoObjPath>
+    <BaseIntermediateOutputPath>$(RepoObjPath)$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <BaseOutputPath Condition=" '$(BaseOutputPath)' == '' ">$(RepoBinPath)$(MSBuildProjectName)\</BaseOutputPath>
+    <PackageOutputPath>$(RepoBuildPath)nuget\$(Configuration)\</PackageOutputPath>
+
+    <Authors>Unity Technologies</Authors>
+    <Owners>Unity Technologies</Owners>
+    <Copyright>2019 Unity Technologies. All rights reserved.</Copyright>
+    <PackageProjectUrl>https://github.cds.internal.unity3d.com.com/unity/Unity.Ipc</PackageProjectUrl>
+    <PackageIconUrl>https://aka.ms/VsExtensibilityIcon</PackageIconUrl>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+
+    <MicroBuildPackageVersion>2.0.55</MicroBuildPackageVersion>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+
+    <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
+
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.0.25" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19367-01" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net471" Version="1.0.0-preview.2" PrivateAssets="All" IncludeAssets="runtime; build; native; contentfiles; analyzers" Condition=" '$(TargetFramework)' == 'net471' " />
+  </ItemGroup>
+</Project>

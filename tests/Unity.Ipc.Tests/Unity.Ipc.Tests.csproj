@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\com.unity.ipc\Unity.Ipc.csproj" />
+    <ProjectReference Include="..\..\src\com.unity.ipc\Unity.Ipc\Unity.Ipc.csproj" />
     <ProjectReference Include="..\..\src\Unity.Ipc.Hosted.Client\Unity.Ipc.Hosted.Client.csproj" />
     <ProjectReference Include="..\..\src\Unity.Ipc.Hosted.Server\Unity.Ipc.Hosted.Server.csproj" />
   </ItemGroup>

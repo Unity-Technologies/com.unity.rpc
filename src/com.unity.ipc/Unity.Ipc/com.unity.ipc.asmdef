@@ -1,6 +1,6 @@
 {
-    "name": "Unity.Ipc",
-    "optionalUnityReferences": [],
+    "name": "com.unity.ipc",
+    "references": [],
     "includePlatforms": [
         "Editor"
     ],
@@ -9,5 +9,6 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": []
+    "defineConstraints": [],
+    "versionDefines": []
 }

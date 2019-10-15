@@ -87,6 +87,4 @@ namespace Unity.Ipc
         public IpcVersion Version { get; set; }
         public Task<IpcVersion> GetVersion() => Task.FromResult(Version);
     }
-
-
 }

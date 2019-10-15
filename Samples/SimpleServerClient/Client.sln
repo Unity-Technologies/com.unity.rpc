@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.705
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Unity.Ipc", "..\..\src\com.unity.ipc\Unity.Ipc.csproj", "{3163D84D-2448-4670-B672-92EEE521F60A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Unity.Ipc", "..\..\src\com.unity.ipc\Unity.Ipc\Unity.Ipc.csproj", "{3163D84D-2448-4670-B672-92EEE521F60A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientCLI", "ClientCLI\ClientCLI.csproj", "{DFE02A4D-85D7-48E4-8C26-1E733805F7F2}"
 EndProject

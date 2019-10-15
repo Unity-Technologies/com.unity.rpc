@@ -1,0 +1,33 @@
+{% metadata_file .yamato_config/config.yml %}
+---
+{% for platform in platforms %}
+test_{{ platform.name }}:
+  name: Test {{ platform.name }}
+  agent:
+    type: {{ platform.type }}
+    image: {{ platform.image }}
+    flavor: {{ platform.flavor}}
+  commands:
+    - dotnet restore
+    - dotnet test
+  dependencies:
+    - .yamato/CI.yml#build
+{% endfor %}
+
+commit_ci:
+  name: CI Per Commit
+  agent:
+    name: whatever
+    type: Unity::VM
+    image: cds-ops/ubuntu-18.04-agent:latest
+    flavor: b1.small
+  commands:
+    - dir
+#  triggers:
+#    branches:
+#      only:
+#      - "/.*/"
+  dependencies:
+  {% for platform in platforms %}
+  - .yamato/CI.yml#test_{{ platform.name }}
+  {% endfor %}

@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\com.unity.ipc\Unity.Ipc.csproj" />
+    <ProjectReference Include="..\..\..\src\com.unity.ipc\Unity.Ipc\Unity.Ipc.csproj" />
     <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
   </ItemGroup>
 

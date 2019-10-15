@@ -1,11 +1,13 @@
 {
-	"name": "com.unity.ipc",
-	"displayName": "Unity IPC Client",
-	"version": "1.0.0-dev",
-	"unity": "2018.4",
-	"description": "",
-	"dependencies": {
-	},
-	"devDependencies": {
-	}
+  "name": "com.unity.ipc",
+  "displayName": "Unity IPC Client",
+  "version": "0.0.0-preview",
+  "unity": "2018.4",
+  "description": "Unity IPC Client",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git@github",
+    "revision": "hash"
+  }
 }

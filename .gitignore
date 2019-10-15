@@ -52,7 +52,6 @@ artifacts/
 *_p.c
 *_i.h
 *.ilk
-*.meta
 *.obj
 *.pch
 *.pdb
@@ -196,8 +195,6 @@ _pkginfo.txt
 
 # Others
 ClientBin/
-~$*
-*~
 *.dbmdl
 *.dbproj.schemaview
 *.jfm
@@ -290,3 +287,8 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+
+# files ending in ~ can be ignored
+*~
+# but keep track of directories ending in ~
+!*~/
