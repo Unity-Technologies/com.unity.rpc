@@ -1,33 +1,39 @@
 {% metadata_file .yamato_config/config.yml %}
 ---
+{% for package in packages %}
+{% for editor in editors %}
 {% for platform in platforms %}
-test_{{ platform.name }}:
-  name: Test {{ platform.name }}
+test_{{ package.safename }}_{{ platform.name }}_{{ editor.version }}:
+  name : Test {{ package.name }} {{ editor.version }} on {{ platform.name }}
   agent:
     type: {{ platform.type }}
     image: {{ platform.image }}
     flavor: {{ platform.flavor}}
+  variables:
+    DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
   commands:
     - dotnet restore
     - dotnet test
+
   dependencies:
-    - .yamato/CI.yml#build
+    - .yamato/build.yml#build
+
+  artifacts:
+    logs:
+      paths:
+        - "upm-ci~/test-results/**/*"
+{% endfor %}
+{% endfor %}
 {% endfor %}
 
-commit_ci:
-  name: CI Per Commit
-  agent:
-    name: whatever
-    type: Unity::VM
-    image: cds-ops/ubuntu-18.04-agent:latest
-    flavor: b1.small
-  commands:
-    - dir
-#  triggers:
-#    branches:
-#      only:
-#      - "/.*/"
+test_trigger:
+  name: Build and Test All
   dependencies:
-  {% for platform in platforms %}
-  - .yamato/CI.yml#test_{{ platform.name }}
-  {% endfor %}
+    {% for package in packages %}
+    {% for editor in editors %}
+    {% for platform in platforms %}
+    - .yamato/test.yml#test_{{ package.safename }}_{{platform.name}}_{{editor.version}}
+    {% endfor %}
+    {% endfor %}
+    {% endfor %}

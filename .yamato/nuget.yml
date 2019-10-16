@@ -1,0 +1,40 @@
+pack:
+  name: Pack Nuget
+  agent:
+    type: Unity::VM
+    image: core-kaunas/win10-vs2017-dotnetcore:latest
+    flavor: m1.large
+  variables:
+    DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+  commands:
+    - dotnet restore
+    - dotnet pack -c Release
+
+  dependencies:
+  - .yamato/build.yml#build
+
+  artifacts:
+    nuget:
+      paths:
+        - "build/nuget/Release/*.nupkg"
+
+publish:
+  name: Publish Nuget
+  agent:
+    type: Unity::VM
+    image: core-kaunas/win10-vs2017-dotnetcore:latest
+    flavor: m1.large
+  interpreter: powershell
+  variables:
+    DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+  commands:
+    - |
+      $env:psmodulepath
+      Push-Location build\nuget\Release
+      Get-ChildItem | %{ dotnet nuget push $_.Name -k $($env:ARTIFACTORY) -s Unity }
+      Pop-Location
+
+  dependencies:
+  - .yamato/nuget.yml#pack
