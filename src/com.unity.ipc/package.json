@@ -7,7 +7,7 @@
   "devDependencies": {},
   "repository": {
     "type": "git",
-    "url": "git@github",
+    "url": "git@github.cds.internal.unity3d.com:unity/Unity.Ipc.git",
     "revision": "hash"
   }
 }
