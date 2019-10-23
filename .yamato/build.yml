@@ -33,3 +33,12 @@ build:
     binaries:
       paths:
         - "build/bin/**/*"
+    tests:
+      paths:
+        - "build/tests/bin/**/*"
+    nuget:
+      paths:
+        - "build/nuget/**/*"
+    npm:
+      paths:
+        - "build/npm/**/*"

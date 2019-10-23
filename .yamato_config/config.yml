@@ -17,6 +17,7 @@ editors:
 
 packages:
   - name: com.unity.ipc
-    path: build/packages/com.unity.ipc
+    path: build/npm/com.unity.ipc
+    windowspath: build\npm\com.unity.ipc
     nuget: 
     safename: com_unity_ipc
