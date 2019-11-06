@@ -14,6 +14,14 @@
     <None Include="$(SolutionDir)LICENSE.md" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Editor\Unity.Ipc.Interfaces\Unity.Ipc.Interfaces.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Nerdbank.GitVersioning" Version="3.0.26" />
+  </ItemGroup>
+
   <Import Project="$(SolutionDir)common\configuration.targets" />
   <Import Project="$(SolutionDir)common\packaging.targets" Condition=" '$(TargetFramework)' == 'net471' " />
 

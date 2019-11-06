@@ -21,6 +21,7 @@
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IsPackable>false</IsPackable>
 
   </PropertyGroup>
   <ItemGroup>

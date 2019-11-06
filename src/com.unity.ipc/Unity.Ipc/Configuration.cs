@@ -1,21 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using MessagePack;
+﻿using MessagePack;
 using MessagePack.Resolvers;
 
 namespace Unity.Ipc
 {
     public class Configuration
     {
-        public static int DefaultPort { get; set; } = 59595;
-        public int Port { get; protected set; }
-        public const string DefaultProtocolVersion = "1.0";
-        public IpcVersion ProtocolVersion { get; protected set; }
-
-        public IEnumerable<Type> LocalTypes { get; } = new List<Type>();
-        public IEnumerable<Type> RemoteTypes { get; } = new List<Type>();
-
         private static IFormatterResolver[] defaultResolvers;
+        public const int DefaultPort = 59595;
+        public const string DefaultProtocolVersion = "1.0";
 
         public static IFormatterResolver[] DefaultResolvers
         {
@@ -47,32 +39,20 @@ namespace Unity.Ipc
         /// set <see cref="DefaultResolvers"/>
         /// </summary>
         public Configuration() : this(DefaultResolvers)
-        {
-        }
+        {}
 
-        public Configuration(params IFormatterResolver[] resolvers)
+        protected Configuration(params IFormatterResolver[] resolvers)
         {
             CompositeResolver.RegisterAndSetAsDefault(resolvers);
         }
 
-        /// <summary>
-        /// Add type representing a remote proxy
-        /// </summary>
-        public Configuration AddRemoteTarget<T>()
-            where T : class
+        public virtual IServerInformation GetServerInformation()
         {
-            ((List<Type>)RemoteTypes).Add(typeof(T));
-            return this;
+            return new ServerInformation { Version = ProtocolVersion };
         }
 
-        /// <summary>
-        /// Add type representing a local ipc target
-        /// </summary>
-        public Configuration AddLocalTarget<T>()
-            where T : class
-        {
-            ((List<Type>)LocalTypes).Add(typeof(T));
-            return this;
-        }
+        public int Port { get; set; } = DefaultPort;
+        public IpcVersion ProtocolVersion { get; set; } = IpcVersion.Parse(DefaultProtocolVersion);
+        public string Version { get => ProtocolVersion.Version; set => ProtocolVersion = IpcVersion.Parse(value); }
     }
 }

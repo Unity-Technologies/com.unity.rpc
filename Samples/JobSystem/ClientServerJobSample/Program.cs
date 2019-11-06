@@ -4,97 +4,117 @@ using System.Threading;
 using System.Threading.Tasks;
 using JobClient;
 using JobServer;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Mono.Options;
 using NLog;
 using NLog.Config;
 using NLog.Extensions.Logging;
 using NLog.Targets.Seq;
 using NLog.Targets.Wrappers;
 using Unity.Ipc;
+using Unity.Ipc.Hosted;
+using Unity.Ipc.Hosted.Extensions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using LogLevel = NLog.LogLevel;
-using IpcServerHost = Unity.Ipc.Hosted.Server.IpcHost;
-using IpcClientHost = Unity.Ipc.Hosted.Client.IpcHost;
 
 namespace ClientServerJobSample
 {
     class Program
     {
+        private const string AppSettingsFile = "appsettings.json";
+
         static async Task Main(string[] args)
         {
             var cts = new CancellationTokenSource();
             LogManager.Configuration = NLogConfigurator.ConfigureSeq(LogLevel.Debug);
 
-            var serverHost = ConfigureServer(cts);
+            var conf = GetConfiguration(args);
 
-            await serverHost.Start(cts.Token);
-            ThreadPool.QueueUserWorkItem(s => ((IpcServerHost)s).Run(), serverHost);
-
-            var clientHost = ConfigureClient();
-
-            var ipcClient = await clientHost.Start(cts.Token);
-            var logger = clientHost.ServiceProvider.GetService<ILogger<Program>>();
-
-            var client = ipcClient.GetLocalTarget<JobClientService>();
-            client.JobStatusChangedEventHandler += (sender, data) => {
-                logger?.LogInformation("[{threadId}] Job [{jobId}] - status changed to {status}",
-                    Thread.CurrentThread.ManagedThreadId, data.JobId, data.Data);
-            };
-
-            client.JobProgressUpdatedEventHandler += (sender, data) => {
-                logger?.LogInformation("[{threadId}] Job [{jobId}] - in progress: {jobProgress}%",
-                    Thread.CurrentThread.ManagedThreadId, data.JobId, data.Data * 100);
-            };
-
-            client.JobCompletedEventHandler += (sender, data) => {
-                logger?.LogInformation("[{threadId}] Job [{jobId}] - job completed with status",
-                    Thread.CurrentThread.ManagedThreadId, data.JobId, data.Data.ToString());
-            };
-
-
-            var jobid = await client.CreateJob("Unity.Basic.Job", $"job-{Guid.NewGuid()}", cts.Token);
-            var res = await client.StartJob(jobid, cts.Token);
-
-            jobid = await client.CreateJob("Unity.Basic.Job", $"job-{Guid.NewGuid()}", cts.Token);
-            res = await client.StartJob(jobid, cts.Token);
-
-            await clientHost.Run();
-
-        }
-
-        private static IpcClientHost ConfigureClient()
-        {
-            var clientHost = new IpcClientHost(29000, IpcVersion.Parse("1.1"));
-            clientHost.Configuration.AddLocalTarget<JobClientService>();
-            clientHost.Configuration.AddRemoteTarget<IJobServerService>();
-
-            clientHost
-                .UseConsoleLifetime()
-                .ConfigureServices((context, services) => ConfigureServices(services))
+            var server = ConfigureServer(conf, cts.Token)
+                .Starting(provider => provider.GetLogger<Program>().LogDebug("Server starting"))
+                .Stopping(provider => provider.GetLogger<Program>().LogDebug("Server stopping"))
                 ;
-            return clientHost;
+
+            var client = ConfigureClient(conf, cts.Token)
+                .Starting(provider => provider.GetLogger<Program>().LogDebug("Client starting"))
+                .Stopping(provider => provider.GetLogger<Program>().LogDebug("Client stopping"))
+                ;
+
+            client.Ready(async provider => {
+                var logger = provider.GetService<ILogger<Program>>();
+
+                var clientService = provider.GetService<JobClientService>();
+                clientService.JobStatusChangedEventHandler += (sender, data) => {
+                    logger?.LogInformation("[{threadId}] Job [{jobId}] - status changed to {status}",
+                        Thread.CurrentThread.ManagedThreadId, data.JobId, data.Data);
+                };
+
+                clientService.JobProgressUpdatedEventHandler += (sender, data) => {
+                    logger?.LogInformation("[{threadId}] Job [{jobId}] - in progress: {jobProgress}%",
+                        Thread.CurrentThread.ManagedThreadId, data.JobId, data.Data * 100);
+                };
+
+                clientService.JobCompletedEventHandler += (sender, data) => {
+                    logger?.LogInformation("[{threadId}] Job [{jobId}] - job completed with status",
+                        Thread.CurrentThread.ManagedThreadId, data.JobId, data.Data.ToString());
+                };
+
+
+                var jobid = await clientService.CreateJob("Unity.Basic.Job", $"job-{Guid.NewGuid()}", cts.Token);
+                var res = await clientService.StartJob(jobid, cts.Token);
+
+                jobid = await clientService.CreateJob("Unity.Basic.Job", $"job-{Guid.NewGuid()}", cts.Token);
+                res = await clientService.StartJob(jobid, cts.Token);
+            });
+
+            await server.Start(cts.Token);
+            await client.Run(cts.Token); 
         }
 
-        private static IpcServerHost ConfigureServer(CancellationTokenSource cts)
+        // configure the host environment. this will be inherited into the app environment
+        private static Configuration GetConfiguration(string[] args)
         {
-            var serverHost = new IpcServerHost(29000, IpcVersion.Parse("1.1"));
-            serverHost.Configuration.AddLocalTarget<JobServerSession>();
-            serverHost.Configuration.AddRemoteTarget<IJobClientService>();
+            // configure app settings, merging settings from a json file, environment variables
+            // and command line arguments into the configuration object
 
-            serverHost
-                .UseConsoleLifetime()
-                .ConfigureServices((context, services) => {
-                    ConfigureServices(services);
+            var builder = new ConfigurationBuilder()
+                          .SetBasePath(Directory.GetCurrentDirectory())
+                          .AddJsonFile(AppSettingsFile, optional: true, reloadOnChange: true)
+                          .AddEnvironmentVariables("JOBSERVER_")
+                          .AddCommandLine(args);
+            var conf = builder.Build();
+            var configuration = conf.Get<Configuration>();
+            return configuration;
+        }
 
-                    var serverService = new JobServerService(cts.Token);
-                    serverService.RegisterDispatcher<BasicJob.BasicJob>("Unity.Basic.Job");
-                    services.AddSingleton(serverService);
+
+
+        private static IpcHostedServer ConfigureServer(Configuration configuration, CancellationToken token)
+        {
+            return (IpcHostedServer) new IpcHostedServer(configuration)
+                .AddRemoteProxy<IJobClientService>()
+                .AddLocalTarget(provider => {
+                    var service = new JobServerService(token);
+                    service.RegisterDispatcher<BasicJob.BasicJob>("Unity.Basic.Job");
+                    return service;
                 })
-                ;
+                .AddLocalScoped<JobServerSession>()
+                .ConfigureServices(ConfigureLogging)
+                .UseConsoleLifetime();
+        }
 
-            return serverHost;
+
+        private static IpcHostedClient ConfigureClient(Configuration configuration, CancellationToken token)
+        {
+            return (IpcHostedClient) new IpcHostedClient(configuration)
+                         .AddRemoteProxy<IJobServerService>()
+                         .AddLocalTarget<JobClientService>()
+                         .ConfigureServices(ConfigureLogging)
+                         .UseConsoleLifetime();
+
         }
 
         public static string GetTemporaryDirectory()
@@ -104,12 +124,14 @@ namespace ClientServerJobSample
             return tempDirectory;
         }
 
-        private static void ConfigureServices(IServiceCollection services)
+        private static void ConfigureLogging(HostBuilderContext ctx, IServiceCollection services)
         {
             services.AddLogging(configure => configure.AddConsole().AddNLog()).Configure<LoggerFilterOptions>(options =>
                 options.MinLevel = Microsoft.Extensions.Logging.LogLevel.Debug);
         }
     }
+
+
 
     public static class NLogConfigurator
     {

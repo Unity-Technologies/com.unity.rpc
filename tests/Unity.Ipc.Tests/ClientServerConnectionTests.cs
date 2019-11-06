@@ -8,11 +8,14 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using NLog.Extensions.Logging;
+using Unity.Ipc.Hosted;
+using Unity.Ipc.Hosted.Extensions;
 using Xunit;
 using Xunit.Abstractions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using LogFactory = Divergic.Logging.Xunit.LogFactory;
 using LogLevel = NLog.LogLevel;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Unity.Ipc.Tests
 {
@@ -97,6 +100,34 @@ namespace Unity.Ipc.Tests
         public int LastResult;
     }
 
+    public class Helpers
+    {
+        public static Configuration GetConfiguration(int port, int protocol) =>
+            new Configuration { Port = port, ProtocolVersion = IpcVersion.Parse(protocol.ToString()) };
+
+        public static async Task<IpcHostedServer> NewServer<T>(Configuration configuration, CancellationTokenSource cts)
+            where T : class
+        {
+            var task = new TaskCompletionSource<IpcHostedServer>();
+            var client = await new IpcHostedServer(configuration)
+                               .AddLocalTarget<T>()
+                               .Ready(p => task.SetResult(p.GetService<IpcHostedServer>()))
+                               .Start(cts.Token);
+            return await task.Task;
+        }
+
+        public static async Task<IRequestContext> NewClient<T>(Configuration configuration, CancellationTokenSource cts)
+            where T : class
+        {
+            var task = new TaskCompletionSource<IRequestContext>();
+            var client = await new IpcHostedClient(configuration)
+                               .AddRemoteProxy<T>()
+                               .Ready(p => task.SetResult(p.GetRequestContext()))
+                               .Start(cts.Token);
+            return await task.Task;
+        }
+    }
+
     public class ClientServerConnectionTests : IClassFixture<GetUniqueValues>
     {
         private GetUniqueValues _uniqueValues;
@@ -133,14 +164,13 @@ namespace Unity.Ipc.Tests
             var protocolRevision = 2;
             var tcpPort = _uniqueValues.NextTcpPortWithRange(protocolRevision + 1);
 
-            var serverHost = new Hosted.Client.IpcHost(tcpPort);
-            serverHost.Configuration.AddLocalTarget<BasicMathService>();
-            ThreadPool.QueueUserWorkItem(async _ => await serverHost.Run(cts.Token));
+            var configuration = Helpers.GetConfiguration(tcpPort, protocolRevision);
+            var server = await Helpers.NewServer<BasicMathService>(configuration, cts);
 
-            var clientA = await NewClient(tcpPort, cts);
+            var clientA = await Helpers.NewClient<IMathSession>(configuration, cts);
             var mathSessionA = clientA.GetRemoteTarget<IMathSession>();
 
-            var clientB = await NewClient(tcpPort, cts);
+            var clientB = await Helpers.NewClient<IMathSession>(configuration, cts);
             var mathSessionB = clientB.GetRemoteTarget<IMathSession>();
 
             int retAdd = await mathSessionA.Add(9, 11);
@@ -150,16 +180,9 @@ namespace Unity.Ipc.Tests
             Assert.Equal(3 + 12, retAdd);
 
 
-            var stopTask = serverHost.Stop();
+            var stopTask = server.Stop();
             bool timedout = (await Task.WhenAny(stopTask, Task.Delay(100))) != stopTask;
             Assert.False(timedout, "Server didn't shutdown in an acceptable timely fashion");
-        }
-
-        private static async Task<Ipc> NewClient(int tcpPort, CancellationTokenSource cts)
-        {
-            var clientHost = new Hosted.Client.IpcHost(tcpPort);
-            clientHost.Configuration.AddRemoteTarget<IMathSession>();
-            return await clientHost.Start(cts.Token);
         }
 
         //[Fact]
@@ -192,8 +215,8 @@ namespace Unity.Ipc.Tests
         public async void SingleClientNoServer()
         {
             var tcpPort = _uniqueValues.NextTcpPort();
-            var client = new Hosted.Client.IpcHost(tcpPort);
-            await Assert.ThrowsAnyAsync<SocketException>(() => client.Start());
+            var client = new IpcClient(Helpers.GetConfiguration(tcpPort, 1));
+            await Assert.ThrowsAnyAsync<SocketException>(() => client.Run());
         }
 
         //[Fact]
@@ -717,6 +740,5 @@ namespace Unity.Ipc.Tests
         //        Assert.True(serverTask.Wait(10_000), "Server didn't shutdown in an acceptable timely fashion");
         //    }
         //}
-
     }
 }

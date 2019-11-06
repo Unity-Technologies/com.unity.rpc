@@ -28,7 +28,7 @@ namespace JobServer
     {
         private readonly JobServerService serverService;
         private readonly IRequestContext context;
-        private IJobClientService Client => context.Get<IJobClientService>();
+        private IJobClientService Client => context.GetRemoteTarget<IJobClientService>();
 
         private ConcurrentDictionary<string, JobDispatcherBase> _jobsByName;
         private ConcurrentDictionary<int, JobDispatcherBase> _jobsById;

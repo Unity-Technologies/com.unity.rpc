@@ -11,7 +11,7 @@ pack:
 
   commands:
     - dotnet restore
-    - dotnet pack -c Release
+    - dotnet pack --no-build --no-restore -c Release
 
   dependencies:
   - .yamato/build.yml#build

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using JobServer;
 using Unity.Ipc;
+using Unity.Ipc.Extensions;
 
 namespace JobClient
 {
@@ -21,7 +22,7 @@ namespace JobClient
     public class JobClientService : IJobClientService, IDisposable
     {
         private readonly IRequestContext context;
-        private IJobServerService Server => context.Get<IJobServerService>();
+        private IJobServerService Server => context.GetRemoteTarget<IJobServerService>();
         public event EventHandler<JobEventData<JobStatus>> JobStatusChangedEventHandler;
         public event EventHandler<JobEventData<float>> JobProgressUpdatedEventHandler;
         public event EventHandler<JobEventData<JobCompletion>> JobCompletedEventHandler;

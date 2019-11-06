@@ -1,40 +1,56 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Unity.Ipc
 {
-    public interface IContext
+    public enum TargetType
     {
-        T Get<T>() where T : class;
-        void Register(object instance);
-        IEnumerable<object> Instances { get; }
+        Local,
+        Remote
     }
 
-    public interface ILocalTargets : IContext
-    { }
-
-    public interface IRequestContext : IContext
+    public interface IRequestContext : IDisposable
     {
-        void AddTargets(IEnumerable<object> other);
+        string Id { get; }
+        T Get<T>(TargetType targetType) where T : class;
+        T GetLocalTarget<T>() where T : class;
+        T GetRemoteTarget<T>() where T : class;
+
+        IEnumerable<object> LocalTargets { get; }
+        IEnumerable<object> RemoteTargets { get; }
     }
 
-    public class ProxyContainer : ILocalTargets, IRequestContext
+    public class IpcContext : IRequestContext
     {
-        public IEnumerable<object> Instances { get; } = new List<object>();
-        public void Register(object instance) => ((List<object>)Instances).Add(instance);
-        public T Get<T>() where T : class => Instances.FirstOrDefault(x => x is T) as T;
-        public void AddTargets(IEnumerable<object> targets) => ((List<object>)Instances).AddRange(targets);
-    }
+        public string Id { get; }
+        public IEnumerable<object> LocalTargets { get; } = new List<object>();
+        public IEnumerable<object> RemoteTargets { get; } = new List<object>();
 
-    public static class TaskExtensions
-    {
-        public static async Task<(T, bool)> Await<T>(this Task<T> task, CancellationToken cancellationToken, int msTimeout = -1)
+        public IpcContext(string id)
         {
-            if ((await Task.WhenAny(task, Task.Delay(msTimeout, cancellationToken))) == task)
-                return (task.Result, true);
-            return (default(T), false);
+            Id = id;
+        }
+        
+        public IRequestContext Register(TargetType targetType, object instance)
+        {
+            GetTargetsList(targetType).Add(instance);
+            return this;
+        }
+
+        public T Get<T>(TargetType targetType) where T : class => GetTargetsList(targetType).FirstOrDefault(x => x is T) as T;
+        public T GetLocalTarget<T>() where T : class => Get<T>(TargetType.Local);
+        public T GetRemoteTarget<T>() where T : class => Get<T>(TargetType.Remote);
+
+        private List<object> GetTargetsList(TargetType targetType) => (List<object>)(targetType == TargetType.Local ? LocalTargets : RemoteTargets);
+
+        protected virtual void Dispose(bool disposing)
+        {}
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -6,14 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LibLog" Version="5.0.6">
+    <PackageReference Include="LibLog" Version="5.0.7-build.575">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.0.0-preview8.19405.4" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.4" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.0.0-preview8.19405.4" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,7 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(SolutionDir)LICENSE.md" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath=""/>
+    <None Include="$(SolutionDir)LICENSE.md" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Nerdbank.GitVersioning" Version="3.0.26" />
   </ItemGroup>
 
 </Project>

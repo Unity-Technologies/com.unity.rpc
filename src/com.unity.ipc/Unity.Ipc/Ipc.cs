@@ -1,42 +1,214 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using StreamRpc;
 
 namespace Unity.Ipc
 {
+    public interface IIpcRegistration
+    {
+        void RegisterLocalTarget(object instance);
+        void RegisterRemoteTarget<TType>() where TType : class;
+        void RegisterRemoteTarget(Type type);
+        void RegisterRemoteTarget(object remoteProxy);
+    }
+
+    public class Ipc<T> : Ipc, IIpcRegistration
+        where T : Ipc<T>, IRequestContext
+    {
+        public event Action<IIpcRegistration, IRequestContext> OnStart;
+        public event Action<T> OnStop;
+        public event Action<IRequestContext> OnReady;
+
+        public Ipc(Configuration configuration, CancellationToken token)
+            : base(configuration, token)
+        {}
+
+        public T Attach(Stream stream)
+        {
+            InternalAttach(stream);
+            return (T)this;
+        }
+
+        public T Starting(Action<IIpcRegistration, IRequestContext> onStart)
+        {
+            OnStart += onStart;
+            return (T)this;
+        }
+
+        public T Stopping(Action<T> onStop)
+        {
+            OnStop += onStop;
+            return (T)this;
+        }
+
+        public T Ready(Action<IRequestContext> onReady)
+        {
+            OnReady += onReady;
+            return (T)this;
+        }
+
+        public T RegisterLocalTarget(object instance)
+        {
+            InternalRegisterLocalTarget(instance);
+            return (T)this;
+        }
+
+        public T RegisterRemoteTarget<TType>() where TType : class => RegisterRemoteTarget(typeof(TType));
+
+        public T RegisterRemoteTarget(Type type)
+        {
+            InternalRegisterRemoteProxy(type);
+            return (T)this;
+        }
+
+        public T RegisterRemoteTarget(object remoteProxy)
+        {
+            InternalRegisterRemoteProxy(remoteProxy);
+            return (T)this;
+        }
+
+        public T StartListening()
+        {
+            InternalStartListening();
+            return (T)this;
+        }
+
+        protected void RaiseOnStart()
+        {
+            OnStart?.Invoke(this, this);
+            OnStart = null;
+        }
+
+        protected void RaiseOnStop()
+        {
+            OnStop?.Invoke((T)this);
+            OnStop = null;
+        }
+
+        protected void RaiseOnReady()
+        {
+            OnReady?.Invoke(this);
+            OnReady = null;
+        }
+
+        void IIpcRegistration.RegisterLocalTarget(object instance)
+        {
+            RegisterLocalTarget(instance);
+        }
+
+        void IIpcRegistration.RegisterRemoteTarget<TType>()
+        {
+            RegisterRemoteTarget<TType>();
+        }
+
+        void IIpcRegistration.RegisterRemoteTarget(Type type)
+        {
+            RegisterRemoteTarget(type);
+        }
+
+        void IIpcRegistration.RegisterRemoteTarget(object remoteProxy)
+        {
+            RegisterRemoteTarget(remoteProxy);
+        }
+    }
+
     /// <summary>
     /// An ipc sender/receiver
     /// Call <seealso cref="Attach"/> first, then register receivers and senders
     /// with <seealso cref="RegisterLocalTarget" /> and <seealso cref="RegisterRemoteTarget" />
     /// and then call <seealso cref="StartListening" /> to listen to remote calls.
     /// </summary>
-    public class Ipc : IDisposable
+    public class Ipc : IpcContext
     {
-        private readonly IRequestContext remoteTargets = new ProxyContainer();
-        private readonly ILocalTargets localTargets = new ProxyContainer();
         private JsonRpc rpc;
-        protected CancellationToken Token { get; }
-        internal event EventHandler<JsonRpcDisconnectedEventArgs> Disconnected;
+        private readonly CancellationTokenSource cts = new CancellationTokenSource();
 
-        public IEnumerable<object> RemoteTargets => remoteTargets.Instances;
-        public IEnumerable<object> LocalTargets => localTargets.Instances;
-        public string Id { get; }
+        private List<Type> remoteTypes = new List<Type>();
+        private List<object> remoteProxies = new List<object>();
+        private List<object> localTargets = new List<object>();
 
-        public Ipc(CancellationToken token = default(CancellationToken))
+        private bool starting = false;
+
+        protected IEnumerable<Type> RemoteTypes => remoteTypes;
+
+        public CancellationToken Token => cts.Token;
+        public Configuration Configuration { get; private set; }
+
+
+        internal event Action<JsonRpcDisconnectedEventArgs> Disconnected;
+
+        public Ipc(Configuration configuration, CancellationToken token)
+            : base(Guid.NewGuid().ToString())
         {
-            this.Token = token;
-            Id = Guid.NewGuid().ToString();
+            Configuration = configuration;
+            token.Register(() => Stop());
+        }
+
+        public void Reconfigure(Configuration configuration)
+        {
+            if (starting)
+                throw new InvalidOperationException("Cannot reconfigure after calling Initialize/Start/Run, sorry!");
+
+            Configuration = configuration;
+        }
+
+        public virtual Task Initialize()
+        {
+            starting = true;
+            return Task.CompletedTask;
+        }
+
+        public virtual Task Run()
+        {
+            return Task.CompletedTask;
+        }
+
+        public virtual void Stop()
+        {
+            cts.Cancel();
         }
 
         /// <summary>
         /// Initialize the ipc sender/receiver object to use this stream for sending/receiving
         /// </summary>
-        public void Attach(Stream stream)
+        protected void InternalAttach(Stream stream)
         {
             rpc = new JsonRpc(stream);
+            rpc.Disconnected += (_, e) => {
+                Disconnected?.Invoke(e);
+                Dispose();
+            };
+        }
+
+        internal void AddTargets()
+        {
+            if (rpc != null)
+            {
+                // generate and register proxies
+                foreach (var type in RemoteTypes)
+                {
+                    Register(TargetType.Remote, GenerateAndAddProxy(type));
+                }
+
+                remoteTypes.Clear();
+            }
+
+            foreach (var obj in remoteProxies)
+            {
+                Register(TargetType.Remote, AddRemoteProxy(obj));
+            }
+
+            remoteProxies.Clear();
+
+            foreach (var obj in localTargets)
+            {
+                Register(TargetType.Local, AddLocalTarget(obj));
+            }
+
+            localTargets.Clear();
         }
 
         /// <summary>
@@ -45,16 +217,9 @@ namespace Unity.Ipc
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>A proxy instance of the type</returns>
-        public T RegisterRemoteTarget<T>()
-            where T : class
+        public T GenerateAndAddProxy<T>() where T : class
         {
-            if (rpc == null)
-            {
-                throw new InvalidOperationException();
-            }
-            var ret = rpc.Attach<T>();
-            remoteTargets.Register(ret);
-            return ret;
+            return rpc.Attach<T>();
         }
 
         /// <summary>
@@ -63,85 +228,72 @@ namespace Unity.Ipc
         /// </summary>
         /// <param name="type"></param>
         /// <returns>A proxy instance of the type</returns>
-        public object RegisterRemoteTarget(Type type)
+        public object GenerateAndAddProxy(Type type)
         {
-            if (rpc == null)
-            {
-                throw new InvalidOperationException();
-            }
-            var ret = rpc.Attach(type, null);
-            remoteTargets.Register(ret);
-            return ret;
+            return rpc.Attach(type, null);
         }
 
-        public void RegisterRemoteTargets(IEnumerable<Type> types)
+        /// <summary>
+        /// Register a pregenerated proxy object suitable for calling methods/events/properties on the remote.
+        /// </summary>
+        /// <param name="proxyInstance">The proxy instance</param>
+        protected object AddRemoteProxy(object proxyInstance)
         {
-            foreach (var type in types)
-            {
-                RegisterRemoteTarget(type);
-            }
+            rpc?.AddLocalRpcTarget(proxyInstance);
+            return proxyInstance;
         }
 
         /// <summary>
         /// Register an object that is used to receive remote method/events/property calls
         /// </summary>
         /// <param name="instance"></param>
-        public void RegisterLocalTarget(object instance)
+        protected object AddLocalTarget(object instance)
         {
             rpc?.AddLocalRpcTarget(instance);
-            localTargets.Register(instance);
+            return instance;
         }
 
-        public void RegisterLocalTargets(ILocalTargets targets)
+        protected void InternalRegisterRemoteProxy(Type type)
         {
-            foreach (var target in targets.Instances)
-            {
-                RegisterLocalTarget(target);
-            }
+            remoteTypes.Add(type);
         }
 
-        public T GetLocalTarget<T>()
-            where T : class
+        protected void InternalRegisterLocalTarget(object instance)
         {
-            return localTargets.Get<T>();
+            localTargets.Add(instance);
         }
 
-        public T GetRemoteTarget<T>()
-            where T : class
+        protected void InternalRegisterRemoteProxy(object instance)
         {
-            return remoteTargets.Get<T>();
+            remoteProxies.Add(instance);
         }
 
         /// <summary>
         /// Start listening to remote calls.
         /// </summary>
-        public void StartListening()
+        protected void InternalStartListening()
         {
             if (rpc == null)
             {
                 throw new InvalidOperationException();
             }
-            rpc.Disconnected += (sender, args) => Disconnected?.Invoke(sender, args);
-            rpc.StartListening(); ;
+            rpc.StartListening();
         }
 
 
         private bool disposed;
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
+            base.Dispose(disposing);
+
             if (disposed)
                 return;
             if (disposing)
             {
                 rpc?.Dispose();
+                Disconnected = null;
             }
             disposed = true;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
     }
 }

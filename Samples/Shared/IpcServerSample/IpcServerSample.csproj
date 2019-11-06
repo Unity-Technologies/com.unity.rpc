@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net471;netcoreapp2.2</TargetFrameworks>
+    <RootNamespace>Shared</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LibLog" Version="5.0.7-build.575">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\com.unity.ipc\Unity.Ipc\Unity.Ipc.csproj" />
+    <ProjectReference Include="..\SharedInterfaces\SharedInterfaces.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Nerdbank.GitVersioning" Version="3.0.26" />
+  </ItemGroup>
+
+</Project>
