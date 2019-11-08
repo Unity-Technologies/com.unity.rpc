@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PublishTo Condition="'$(PublishTo)' == '' ">$(SolutionDir)build\packages\</PublishTo>
+    <PackageSourceRoot Condition="'$(PackageSourceRoot)' == ''">$(MSBuildProjectDirectory)\..\..\</PackageSourceRoot>
+    <PackageSourceRootFull>$([System.IO.Path]::GetFullPath($(PackageSourceRoot)))</PackageSourceRootFull>
+    <PackageName Condition="'$(PackageName)' == '' ">$([System.IO.Path]::GetDirectoryName($(PackageSourceRootFull)))</PackageName>
+    <PackageName>$([System.IO.Path]::GetFileName($(PackageName)))</PackageName>
+    <PackageTestName>$(PackageName).tests</PackageTestName>
+
+    <PackageSubFolder>\</PackageSubFolder>
+    <TmpDir>$(MSBuildProjectDirectory)\..\</TmpDir>
+    <TmpDir>$([System.IO.Path]::GetFullPath($(TmpDir)))</TmpDir>
+    <TmpDir>$([System.IO.Path]::GetDirectoryName($(TmpDir)))</TmpDir>
+    <TmpDir>$([System.IO.Path]::GetFileName($(TmpDir)))</TmpDir>
+    <PackageSubFolder>$(PackageSubFolder)$(TmpDir)\</PackageSubFolder>
+    <TmpDir>$(MSBuildProjectDirectory)</TmpDir>
+    <TmpDir>$([System.IO.Path]::GetFileName($(TmpDir)))</TmpDir>
+    <PackageSubFolder>$(PackageSubFolder)$(TmpDir)\</PackageSubFolder>
+  </PropertyGroup>
+</Project>

@@ -5,12 +5,30 @@
     <SolutionDir Condition=" '$(SolutionDir)' == '' ">..\..\..\..\</SolutionDir>
   </PropertyGroup>
 
+  <Import Project="$(SolutionDir)common\configuration.targets" />
+
   <ItemGroup>
-    <PackageReference Update="Nerdbank.GitVersioning" Version="3.0.26" />
+    <None Include="$(SolutionDir)icon.png" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="icon.png" />
+    <None Include="$(SolutionDir)LICENSE.md" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="LICENSE.md" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(SolutionDir)LICENSE.md" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="" />
+    <VersionFiles Include="$(IntermediateOutputPath)\$(AssemblyName).Version$(DefaultLanguageSourceExtension)" />
   </ItemGroup>
 
+  <Import Project="$(SolutionDir)common\packaging.props" />
+
+  <Target Name="CopyVersionFiles"
+    DependsOnTargets="AfterBuild"
+    AfterTargets="AfterBuild"
+    Inputs="@(VersionFiles)"
+    Outputs="@(VersionFiles->'$(PublishTo)$(PackageName)$(PackageSubFolder)Version%(Extension)')"
+    >
+
+    <Copy
+      SourceFiles="@(VersionFiles)"
+      DestinationFiles="@(VersionFiles->'$(PublishTo)$(PackageName)$(PackageSubFolder)Version%(Extension)')"
+      SkipUnchangedFiles="true" />
+
+  </Target>
 </Project>

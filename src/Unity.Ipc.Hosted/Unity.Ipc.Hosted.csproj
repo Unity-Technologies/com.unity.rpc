@@ -17,15 +17,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\com.unity.ipc\Unity.Ipc\Unity.Ipc.csproj" />
+    <ProjectReference Include="..\com.unity.ipc\Editor\Unity.Ipc\Unity.Ipc.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(SolutionDir)LICENSE.md" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="" />
+    <None Include="$(SolutionDir)icon.png" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="icon.png" />
+    <None Include="$(SolutionDir)LICENSE.md" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="LICENSE.md" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="Nerdbank.GitVersioning" Version="3.0.26" />
-  </ItemGroup>
+  <Import Project="$(SolutionDir)common\configuration.targets" />
 
 </Project>

@@ -22,12 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\com.unity.ipc\Unity.Ipc\Unity.Ipc.csproj" />
+    <ProjectReference Include="..\..\src\com.unity.ipc\Editor\Unity.Ipc\Unity.Ipc.csproj" />
     <ProjectReference Include="..\..\src\Unity.Ipc.Hosted\Unity.Ipc.Hosted.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="Nerdbank.GitVersioning" Version="3.0.26" />
   </ItemGroup>
 
 </Project>

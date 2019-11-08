@@ -49,7 +49,7 @@ namespace Shared
             };
 
             clientInformation.OnClientConnected += (_, id) => {
-                logger.LogDebug($"Server says I'm connected with id {id}");
+                logger.LogDebug($"Server says a new client connected with id {id}");
             };
         }
 

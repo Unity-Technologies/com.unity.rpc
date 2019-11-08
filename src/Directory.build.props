@@ -4,7 +4,7 @@
     <LangVersion>7.3</LangVersion>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
 
-    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))..\</RepoRoot>
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\'))</RepoRoot>
     <RepoBuildPath>$(RepoRoot)build\</RepoBuildPath>
     <RepoBinPath>$(RepoBuildPath)bin\</RepoBinPath>
     <RepoObjPath>$(RepoBuildPath)obj\</RepoObjPath>
@@ -16,7 +16,7 @@
     <Owners>Unity Technologies</Owners>
     <Copyright>2019 Unity Technologies. All rights reserved.</Copyright>
     <PackageProjectUrl>https://github.cds.internal.unity3d.com.com/unity/Unity.Ipc</PackageProjectUrl>
-    <PackageIconUrl>https://aka.ms/VsExtensibilityIcon</PackageIconUrl>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 
@@ -29,7 +29,7 @@
 
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning" Version="3.0.25" PrivateAssets="all" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.0.26" PrivateAssets="all" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19367-01" PrivateAssets="All" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net471" Version="1.0.0-preview.2" PrivateAssets="All" IncludeAssets="runtime; build; native; contentfiles; analyzers" Condition=" '$(TargetFramework)' == 'net471' " />
   </ItemGroup>

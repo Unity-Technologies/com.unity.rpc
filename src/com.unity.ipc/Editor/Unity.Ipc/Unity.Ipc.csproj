@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net471;netcoreapp2.2</TargetFrameworks>
+    <SolutionDir Condition=" '$(SolutionDir)' == '' ">..\..\..\..\</SolutionDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="StreamRpc" Version="2.1.50-beta" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="lib\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(SolutionDir)icon.png" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="icon.png" />
+    <None Include="$(SolutionDir)LICENSE.md" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="LICENSE.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Unity.Ipc.Interfaces\Unity.Ipc.Interfaces.csproj" />
+  </ItemGroup>
+
+  <Import Project="$(SolutionDir)common\configuration.targets" />
+  <Import Project="$(SolutionDir)common\packaging.targets" />
+
+</Project>

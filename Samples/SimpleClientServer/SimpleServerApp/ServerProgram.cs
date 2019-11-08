@@ -38,8 +38,7 @@ namespace SimpleClientServer
                          .RegisterRemoteTarget<IIpcJobProgress>()
 
                          // this is called when the server is initialized
-                         .Starting((registration, _) => {
-
+                         .Starting((registration, context) => {
                              // register a singleton object that will be available for all clients
                              registration.RegisterLocalTarget(new IpcServerSingleton());
 

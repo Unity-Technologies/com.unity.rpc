@@ -1,0 +1,17 @@
+{
+    "name": "com.unity.ipc.editor",
+    "references": [
+        "com.unity.ipc",
+        "Unity.Ipc.Interfaces"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": []
+}
