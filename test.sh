@@ -10,6 +10,7 @@ fi
 
 CONFIGURATION=""
 PUBLIC=""
+BUILD=0
 
 while (( "$#" )); do
   case "$1" in
@@ -23,6 +24,10 @@ while (( "$#" )); do
     ;;
     -p|--public)
       PUBLIC="/p:PublicRelease=true"
+      shift
+    ;;
+    -b|--build)
+      BUILD=1
       shift
     ;;
     -*|--*=) # unsupported flags
@@ -49,6 +54,9 @@ if [[ x"$OS" == x"Windows" && x"$PUBLIC" != x"" ]]; then
 fi
 
 pushd $DIR
-dotnet restore
-dotnet build --no-restore -c $CONFIGURATION $PUBLIC
+if [[ x"$BUILD" == x"1" ]]; then
+  dotnet restore
+  dotnet build --no-restore -c $CONFIGURATION $PUBLIC
+fi
+dotnet test --no-build --no-restore -c $CONFIGURATION $PUBLIC
 popd
