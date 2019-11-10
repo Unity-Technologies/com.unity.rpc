@@ -38,6 +38,7 @@ build:
     nuget:
       paths:
         - "build/nuget/**/*.nupkg"
+        - "nuget.config"
     npm:
       paths:
         - "build/npm/**/*"
