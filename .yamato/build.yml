@@ -13,17 +13,15 @@ build:
     - dotnet restore
     - dotnet build --no-restore -c Release
     - dotnet pack --no-build --no-restore -c Release
-
+    - mkdir build\npm
 {% for package in packages %}
     - |
-      mkdir build\npm >nul 2>&1 || ver>nul
       pushd {{ package.path }}
       for /f "delims=" %%f in ('call npm pack --quiet') do move %%f ..\..\npm\%%f && goto end
       echo "Packing failed"
       :end
       popd
 {% endfor %}
-
     - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
 {% for package in packages %}
     - upm-ci package pack --package-path {{ package.unixpath }}
@@ -54,3 +52,6 @@ build:
     tests:
       paths:
         - "build/tests/bin/**/*"
+    sources:
+      paths:
+        - "build/packages/**/*"

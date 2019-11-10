@@ -32,12 +32,12 @@ pack_npm:
 
   commands:
     - mkdir build\npm
-
 {% for package in packages %}
     - |
       pushd {{ package.path }}
-      npm pack
-      move *.tgz ..\..\npm
+      for /f "delims=" %%f in ('call npm pack --quiet') do move %%f ..\..\npm\%%f && goto end
+      echo "Packing failed"
+      :end
       popd
 {% endfor %}
 
