@@ -1,27 +1,28 @@
 {% metadata_file .yamato_config/config.yml %}
 ---
-publish_nuget:
-  name: Publish Nuget
+pack_nuget:
+  name: Pack Nuget
   agent:
     type: Unity::VM
     image: core-kaunas/win10-vs2017-dotnetcore:latest
     flavor: m1.large
-  interpreter: powershell
   variables:
     DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
   commands:
-    - |
-      Push-Location build\nuget\Release
-      Get-ChildItem | %{ dotnet nuget push $_.Name -k $($env:ARTIFACTORY) -s Unity }
-      Pop-Location
+    - dotnet restore
+    - dotnet pack --no-build --no-restore -c Release
 
   dependencies:
   - .yamato/build.yml#build
 
+  artifacts:
+    nuget:
+      paths:
+        - "build/nuget/Release/*.nupkg"
 
-publish_npm:
-  name: Publish Npm
+pack_npm:
+  name: Pack Npm
   agent:
     type: Unity::VM
     image: core-kaunas/win10-vs2017-dotnetcore:latest
@@ -30,22 +31,26 @@ publish_npm:
     DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
   commands:
-    - curl -u%ARTIFACTORY% https://artifactory.internal.unity3d.com/api/npm/core-npm/auth/artifactory > %USERPROFILE%\.npmrc
+    - mkdir build\npm
+
 {% for package in packages %}
     - |
       pushd {{ package.path }}
-      (call npm publish --quiet --registry https://artifactory.internal.unity3d.com/api/npm/core-npm) && goto end
-      echo "Publishing failed"
-      :end
+      npm pack
+      move *.tgz ..\..\npm
       popd
 {% endfor %}
 
   dependencies:
   - .yamato/build.yml#build
 
+  artifacts:
+    npm:
+      paths:
+        - "build/npm/**/*"
 
-publish_packman:
-  name: Publish Packman
+pack_packman:
+  name: Pack Packman
   agent:
     type: Unity::VM
     image: core-kaunas/win10-vs2017-dotnetcore:latest
@@ -56,14 +61,13 @@ publish_packman:
   commands:
     - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
 {% for package in packages %}
-    - upm-ci package publish --package-path {{ package.unixpath }}
+    - upm-ci package pack --package-path {{ package.unixpath }}
 {% endfor %}
 
   dependencies:
   - .yamato/build.yml#build
 
-publish_trigger:
-  name: Publish to Artifactory
-  dependencies:
-    - .yamato/publish.yml#publish_nuget
-    - .yamato/publish.yml#publish_npm
+  artifacts:
+    packman:
+      paths:
+        - "upm-ci~/**/*"
