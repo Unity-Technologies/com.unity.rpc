@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <PublishTo Condition="'$(PublishTo)' == '' ">$(SolutionDir)build\packages\</PublishTo>
+    <PublishTo Condition="'$(PublishTo)' == '' ">$(SolutionDir)build\npm\</PublishTo>
     <PackageSourceRoot Condition="'$(PackageSourceRoot)' == ''">$(MSBuildProjectDirectory)\..\..\</PackageSourceRoot>
     <PackageSourceRootFull>$([System.IO.Path]::GetFullPath($(PackageSourceRoot)))</PackageSourceRootFull>
     <PackageName Condition="'$(PackageName)' == '' ">$([System.IO.Path]::GetDirectoryName($(PackageSourceRootFull)))</PackageName>
