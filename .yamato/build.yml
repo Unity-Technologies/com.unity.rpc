@@ -10,9 +10,7 @@ build:
     DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
   commands:
-    - dotnet restore
-    - dotnet build --no-restore -c Release
-    - dotnet pack --no-build --no-restore -c Release
+    - if "x%GIT_BRANCH"=="xmaster" (pack -r -b -p) else (pack -r -b)
     - mkdir build\npm
 {% for package in packages %}
     - |
