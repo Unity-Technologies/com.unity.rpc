@@ -21,10 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(SolutionDir)icon.png" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="icon.png" />
-    <None Include="$(SolutionDir)LICENSE.md" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="LICENSE.md" />
+    <None Include="$(SolutionDir)icon.png" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="icon.png" Condition="Exists('$(SolutionDir)icon.png')"/>
+    <None Include="$(SolutionDir)LICENSE.md" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="LICENSE.md" Condition="Exists('$(SolutionDir)LICENSE.md')"/>
   </ItemGroup>
 
-  <Import Project="$(SolutionDir)common\configuration.targets" />
+  <Import Project="$(SolutionDir)common\configuration.targets" Condition="Exists('$(SolutionDir)common\configuration.targets')" />
 
 </Project>
