@@ -1,13 +1,14 @@
 {
   "name": "com.unity.ipc",
   "displayName": "Unity IPC Client",
-  "version": "0.0.0-preview",
-  "unity": "2018.4",
   "description": "Unity IPC Client",
-  "devDependencies": {},
+  "version": "0.0.0-placeholder",
+  "unity": "2018.4",
   "repository": {
     "type": "git",
-    "url": "git@github.cds.internal.unity3d.com:unity/Unity.Ipc.git",
+    "url": "ssh://git@github.cds.internal.unity3d.com:unity/Unity.Ipc.git",
     "revision": "hash"
+    },
+  "dependencies": {
   }
 }

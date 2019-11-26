@@ -46,9 +46,8 @@ if "x%BUILD%"=="x1" (
 	dotnet restore
 	dotnet build --no-restore -c %CONFIGURATION% %PUBLIC%
 )
-
-dotnet pack --no-restore --no-build -c %CONFIGURATION% %PUBLIC%
+dotnet test --no-build --no-restore -c %CONFIGURATION% %PUBLIC% --logger "trx;LogFileName=dotnet-test-result.trx"
 
 if "x%UPM%"=="x1" (
-  call powershell scripts/Pack-Upm.ps1
+  call powershell scripts/Test-Upm.ps1
 )

@@ -3,45 +3,33 @@
 build:
   name: Build
   agent:
-    type: Unity::VM
-    image: core-kaunas/win10-vs2017-dotnetcore:latest
-    flavor: m1.large
+    type: {{ build_agent_type }}
+    image: {{ build_agent_image }}
+    flavor: {{ build_agent_flavor }}
   variables:
     DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
   commands:
-    - if "x%GIT_BRANCH%"=="xmaster" (pack -r -b -p) else (pack -r -b)
-    - mkdir build\npm
-{% for package in packages %}
-    - |
-      pushd {{ package.path }}
-      for /f "delims=" %%f in ('call npm pack --quiet') do move %%f ..\..\npm\%%f && goto end
-      echo "Packing failed"
-      :end
-      popd
-{% endfor %}
+    - powershell scripts\Get-Deps.ps1
     - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
-{% for package in packages %}
-    - upm-ci package pack --package-path {{ package.unixpath }}
-{% endfor %}
-
-  triggers:
-    pull_requests:
-      - targets:
-          only:
-            - "master"
-    branches:
-      only:
-      - "master"
+    - |
+      set RELEASE=0
+      if "x%GIT_TAG%"!==!"x" set RELEASE=1
+      if "%RELEASE%"=="1" (build -r -p) else (build -r)
+    - |
+      set RELEASE=0
+      if "x%GIT_TAG%"!==!"x" set RELEASE=1
+      if "%RELEASE%"=="1" (test -r -p) else (test -r)
+    - |
+      set RELEASE=0
+      if "x%GIT_TAG%"!==!"x" set RELEASE=1
+      if "%RELEASE%"=="1" (pack -r -p -u) else (pack -r -u)
 
   artifacts:
     nuget:
       paths:
         - "build/nuget/**/*.nupkg"
         - "nuget.config"
-    npm:
-      paths:
-        - "build/npm/**/*"
     packman:
       paths:
         - "upm-ci~/**/*"
@@ -51,6 +39,7 @@ build:
     tests:
       paths:
         - "build/tests/bin/**/*"
+        - "tests/**/TestResults/*"
     sources:
       paths:
-        - "build/packages/**/*"
+        - "build/upm/**/*"

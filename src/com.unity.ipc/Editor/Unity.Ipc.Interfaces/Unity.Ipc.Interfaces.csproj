@@ -2,33 +2,24 @@
 
   <PropertyGroup>
     <TargetFrameworks>net471;netcoreapp2.2</TargetFrameworks>
-    <SolutionDir Condition=" '$(SolutionDir)' == '' ">..\..\..\..\</SolutionDir>
+    <RootDir>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\..\..\'))</RootDir>
+    <PackageSourceRoot>$(MSBuildProjectDirectory)\..\..\</PackageSourceRoot>
+    <FullBuild Condition="'$(SolutionName)' == 'Unity.Ipc'">true</FullBuild>
+    <IsPackable Condition="'$(FullBuild)' != 'true'">false</IsPackable>
+    <Description>IPC library's shared interfaces.</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(SolutionDir)icon.png" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="icon.png" Condition="Exists('$(SolutionDir)icon.png')"/>
-    <None Include="$(SolutionDir)LICENSE.md" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="LICENSE.md" Condition="Exists('$(SolutionDir)LICENSE.md')"/>
+    <None Remove="**\*.meta;*.DotSettings;*.ncrunch*;**\*.asmdef;bin\**;obj\**;LICENSE.md;version.json;package.json" />
+    <None Include="$(RootDir)icon.png" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="icon.png" Condition="Exists('$(RootDir)icon.png')"/>
+    <None Include="$(RootDir)LICENSE.md" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="LICENSE.md" Condition="Exists('$(RootDir)LICENSE.md')"/>
   </ItemGroup>
 
-  <Import Project="$(SolutionDir)common\configuration.targets" Condition="Exists('$(SolutionDir)common\configuration.targets')" />
-  <Import Project="$(SolutionDir)common\packaging.props" Condition="Exists('$(SolutionDir)common\packaging.props')" />
-
-  <ItemGroup>
-    <VersionFiles Include="$(IntermediateOutputPath)\$(AssemblyName).Version$(DefaultLanguageSourceExtension)" />
+  <!-- package the sources and version stamp everything only when doing a full build -->
+  <ItemGroup Condition="'$(FullBuild)' == 'true'">
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.0.26" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19367-01" PrivateAssets="All" />
   </ItemGroup>
+  <Import Project="$(RootDir)common\packageversionfiles.targets" Condition="'$(FullBuild)' == 'true'" />
 
-  <Target Name="CopyVersionFiles"
-    Condition="Exists('$(SolutionDir)common\packaging.targets') and Exists('$(IntermediateOutputPath)\$(AssemblyName).Version$(DefaultLanguageSourceExtension)')"
-    DependsOnTargets="AfterBuild"
-    AfterTargets="AfterBuild"
-    Inputs="@(VersionFiles)"
-    Outputs="@(VersionFiles->'$(PublishTo)$(PackageName)$(PackageSubFolder)Version%(Extension)')"
-    >
-
-    <Copy
-      SourceFiles="@(VersionFiles)"
-      DestinationFiles="@(VersionFiles->'$(PublishTo)$(PackageName)$(PackageSubFolder)Version%(Extension)')"
-      SkipUnchangedFiles="true" />
-
-  </Target>
 </Project>
