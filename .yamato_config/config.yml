@@ -1,8 +1,16 @@
-platforms:
+build_agent_type: Unity::VM
+build_agent_image: core-kaunas/win10-vs2017-dotnetcore:latest
+build_agent_flavor: m1.large
+
+upm_agent_type: Unity::VM
+upm_agent_image: package-ci/win10:stable
+upm_agent_flavor: b1.large
+
+test_platforms:
   - name: win
     type: Unity::VM
-    image: core-kaunas/win10-vs2017-dotnetcore:latest
-    flavor: m1.large
+    image: package-ci/win10:stable
+    flavor: b1.large
 #  - name: mac
 #    type: Unity::VM::osx
 #    image: buildfarm/mac:stable
@@ -12,12 +20,9 @@ platforms:
 #    image: yamato/ubuntu-18.04-dotnet:latest
 #    flavor: b1.small
 
-editors:
-  - version: 2019.1
+test_editors:
+  - version: 2019.2
 
 packages:
   - name: com.unity.ipc
-    unixpath: build/packages/com.unity.ipc
-    path: build\packages\com.unity.ipc
-    nuget: 
     safename: com_unity_ipc

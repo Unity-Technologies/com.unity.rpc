@@ -292,3 +292,14 @@ __pycache__/
 *~
 # but keep track of directories ending in ~
 !*~/
+
+/build
+/.vs
+*.user
+/lib
+.DS_Store
+.idea/
+upm-ci~/
+setenv.sh
+.Editor/
+TestResults

@@ -17,7 +17,7 @@ namespace Unity.Ipc.Hosted
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             cancellationToken.Register(() => Ipc.Stop());
-            await Ipc.Initialize();
+            await Ipc.Start();
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)

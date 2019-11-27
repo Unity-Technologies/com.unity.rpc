@@ -15,20 +15,16 @@ namespace Unity.Ipc
         void RegisterRemoteTarget(object remoteProxy);
     }
 
-    public class Ipc<T> : Ipc, IIpcRegistration
+    public class Ipc<T> : Ipc
         where T : Ipc<T>, IRequestContext
     {
-        public event Action<IIpcRegistration, IRequestContext> OnStart;
-        public event Action<T> OnStop;
-        public event Action<IRequestContext> OnReady;
-
         public Ipc(Configuration configuration, CancellationToken token)
             : base(configuration, token)
         {}
 
-        public T Attach(Stream stream)
+        public new T Attach(Stream stream)
         {
-            InternalAttach(stream);
+            Attach(stream);
             return (T)this;
         }
 
@@ -38,7 +34,7 @@ namespace Unity.Ipc
             return (T)this;
         }
 
-        public T Stopping(Action<T> onStop)
+        public T Stopping(Action<Ipc> onStop)
         {
             OnStop += onStop;
             return (T)this;
@@ -47,6 +43,12 @@ namespace Unity.Ipc
         public T Ready(Action<IRequestContext> onReady)
         {
             OnReady += onReady;
+            return (T)this;
+        }
+
+        public T Disconnected(Action<JsonRpcDisconnectedEventArgs> onDisconnected)
+        {
+            OnDisconnected += onDisconnected;
             return (T)this;
         }
 
@@ -75,44 +77,6 @@ namespace Unity.Ipc
             InternalStartListening();
             return (T)this;
         }
-
-        protected void RaiseOnStart()
-        {
-            OnStart?.Invoke(this, this);
-            OnStart = null;
-        }
-
-        protected void RaiseOnStop()
-        {
-            OnStop?.Invoke((T)this);
-            OnStop = null;
-        }
-
-        protected void RaiseOnReady()
-        {
-            OnReady?.Invoke(this);
-            OnReady = null;
-        }
-
-        void IIpcRegistration.RegisterLocalTarget(object instance)
-        {
-            RegisterLocalTarget(instance);
-        }
-
-        void IIpcRegistration.RegisterRemoteTarget<TType>()
-        {
-            RegisterRemoteTarget<TType>();
-        }
-
-        void IIpcRegistration.RegisterRemoteTarget(Type type)
-        {
-            RegisterRemoteTarget(type);
-        }
-
-        void IIpcRegistration.RegisterRemoteTarget(object remoteProxy)
-        {
-            RegisterRemoteTarget(remoteProxy);
-        }
     }
 
     /// <summary>
@@ -121,7 +85,7 @@ namespace Unity.Ipc
     /// with <seealso cref="RegisterLocalTarget" /> and <seealso cref="RegisterRemoteTarget" />
     /// and then call <seealso cref="StartListening" /> to listen to remote calls.
     /// </summary>
-    public class Ipc : IpcContext
+    public class Ipc : IpcContext, IIpcRegistration
     {
         private JsonRpc rpc;
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
@@ -138,7 +102,14 @@ namespace Unity.Ipc
         public Configuration Configuration { get; private set; }
 
 
-        internal event Action<JsonRpcDisconnectedEventArgs> Disconnected;
+        public event Action<JsonRpcDisconnectedEventArgs> OnDisconnected;
+        public event Action<IIpcRegistration, IRequestContext> OnStart;
+        public event Action<IRequestContext> OnReady;
+        public event Action<Ipc> OnStop;
+
+        private readonly TaskCompletionSource<bool> initTask = new TaskCompletionSource<bool>();
+        private readonly TaskCompletionSource<bool> startTask = new TaskCompletionSource<bool>();
+        private readonly TaskCompletionSource<bool> stopTask = new TaskCompletionSource<bool>();
 
         public Ipc(Configuration configuration, CancellationToken token)
             : base(Guid.NewGuid().ToString())
@@ -158,43 +129,162 @@ namespace Unity.Ipc
         public virtual Task Initialize()
         {
             starting = true;
-            return Task.CompletedTask;
+            return initTask.Task;
         }
 
-        public virtual Task Run()
+        /// <summary>
+        /// Initializes and starts everything. Once this is done, Get* methods can be called.
+        /// </summary>
+        /// <returns></returns>
+        public virtual async Task Start()
         {
-            return Task.CompletedTask;
+            await Initialize();
+            await startTask.Task;
+        }
+
+        /// <summary>
+        /// Runs until stopped or disconnected.
+        /// </summary>
+        /// <returns></returns>
+        public virtual async Task Run()
+        {
+            await Initialize();
+            await stopTask.Task;
         }
 
         public virtual void Stop()
         {
+            RaiseOnStop();
+            FinishStop();
+        }
+
+        public virtual bool Start(Stream stream)
+        {
+            return Start(stream, true);
+        }
+
+        protected bool Start(Stream stream, bool startListening)
+        {
+            try
+            {
+                Attach(stream);
+
+                // add any instances that were added prior to start getting called
+                AddTargets();
+
+                RaiseOnStart();
+
+                // add anything that was registered on the start callback
+                AddTargets();
+
+                if (startListening)
+                    InternalStartListening();
+
+                RaiseOnReady();
+
+                FinishStart(true);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                FinishStop(false, ex);
+                return false;
+            }
+        }
+
+        internal void FinishInitialize(bool success = true, Exception ex = null)
+        {
+            if (success)
+            {
+                initTask.TrySetResult(success);
+            }
+            else
+            {
+                initTask.TrySetException(ex);
+                startTask.TrySetException(ex);
+                stopTask.TrySetException(ex);
+                cts.Cancel();
+            }
+        }
+
+        internal void FinishStart(bool success = true, Exception ex = null)
+        {
+            if (success)
+            {
+                initTask.TrySetResult(success);
+                startTask.TrySetResult(success);
+            }
+            else
+            {
+                initTask.TrySetException(ex);
+                startTask.TrySetException(ex);
+                stopTask.TrySetException(ex);
+                cts.Cancel();
+            }
+        }
+
+        internal void FinishStop(bool success = true, Exception ex = null)
+        {
+            if (success)
+            {
+                initTask.TrySetResult(success);
+                startTask.TrySetResult(success);
+                stopTask.TrySetResult(success);
+            }
+            else
+            {
+                initTask.TrySetException(ex);
+                startTask.TrySetException(ex);
+                stopTask.TrySetException(ex);
+            }
             cts.Cancel();
+        }
+
+        protected virtual void RaiseOnStart()
+        {
+            OnStart?.Invoke(this, this);
+            OnStart = null;
+        }
+
+        protected virtual void RaiseOnReady()
+        {
+            OnReady?.Invoke(this);
+            OnReady = null;
+        }
+
+        protected virtual void RaiseOnStop()
+        {
+            OnStop?.Invoke(this);
+            OnStop = null;
+        }
+
+        protected virtual void RaiseOnDisconnected(JsonRpcDisconnectedEventArgs args)
+        {
+            OnDisconnected?.Invoke(args);
+            Stop();
         }
 
         /// <summary>
         /// Initialize the ipc sender/receiver object to use this stream for sending/receiving
         /// </summary>
-        protected void InternalAttach(Stream stream)
+        public void Attach(Stream stream)
         {
             rpc = new JsonRpc(stream);
             rpc.Disconnected += (_, e) => {
-                Disconnected?.Invoke(e);
-                Dispose();
+                RaiseOnDisconnected(e);
             };
         }
 
         internal void AddTargets()
         {
-            if (rpc != null)
+            // generate and register proxies
+            foreach (var type in RemoteTypes)
             {
-                // generate and register proxies
-                foreach (var type in RemoteTypes)
-                {
-                    Register(TargetType.Remote, GenerateAndAddProxy(type));
-                }
-
-                remoteTypes.Clear();
+                Register(TargetType.Remote, GenerateAndAddProxy(type));
             }
+
+            remoteTypes.Clear();
 
             foreach (var obj in remoteProxies)
             {
@@ -253,21 +343,6 @@ namespace Unity.Ipc
             return instance;
         }
 
-        protected void InternalRegisterRemoteProxy(Type type)
-        {
-            remoteTypes.Add(type);
-        }
-
-        protected void InternalRegisterLocalTarget(object instance)
-        {
-            localTargets.Add(instance);
-        }
-
-        protected void InternalRegisterRemoteProxy(object instance)
-        {
-            remoteProxies.Add(instance);
-        }
-
         /// <summary>
         /// Start listening to remote calls.
         /// </summary>
@@ -281,6 +356,16 @@ namespace Unity.Ipc
         }
 
 
+        protected void InternalRegisterRemoteProxy(Type type) => remoteTypes.Add(type);
+        void IIpcRegistration.RegisterRemoteTarget<TType>() => remoteTypes.Add(typeof(TType));
+        void IIpcRegistration.RegisterRemoteTarget(Type type) => remoteTypes.Add(type);
+
+        protected void InternalRegisterLocalTarget(object instance) => localTargets.Add(instance);
+        void IIpcRegistration.RegisterLocalTarget(object instance) => localTargets.Add(instance);
+
+        protected void InternalRegisterRemoteProxy(object instance) => remoteProxies.Add(instance);
+        void IIpcRegistration.RegisterRemoteTarget(object instance) => remoteProxies.Add(instance);
+
         private bool disposed;
         protected override void Dispose(bool disposing)
         {
@@ -291,7 +376,7 @@ namespace Unity.Ipc
             if (disposing)
             {
                 rpc?.Dispose();
-                Disconnected = null;
+                OnDisconnected = null;
             }
             disposed = true;
         }

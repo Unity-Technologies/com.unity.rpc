@@ -1,9 +1,10 @@
 root=true
 
-[*.cs]
-indent_style=tab
-indent_size=tab
-insert_final_newline=true
+[*.{cs,ps1,ps}]
+indent_style=space
+indent_size=4
+tab_width=4
+insert_final_newline = true
 trim_trailing_whitespace=true
 
 [*.{proto,ts,tsx}]
@@ -15,13 +16,7 @@ indent_style=space
 indent_size=2
 tab_width=2
 
-[*.{ps1,ps}]
-indent_style=space
-indent_size=4
-tab_width=4
-
 [*.cs]
-
 # Microsoft .NET properties
 csharp_new_line_before_open_brace=types,local_functions,methods,indexers,events,properties,accessors,control_blocks,control_blocks
 csharp_preferred_modifier_order=public, private, protected, internal, new, abstract, virtual, sealed, override, static, readonly, extern, unsafe, volatile, async:suggestion

@@ -4,18 +4,19 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using MessagePack.Resolvers;
 using StreamRpc;
 
 namespace Unity.Ipc
 {
+    using System.IO;
+    using System.Runtime.ExceptionServices;
+
     /// <summary>
     /// An ipc server that listens on 
     /// </summary>
     public class IpcServer : Ipc<IpcServer>
     {
         private Socket socket;
-        private readonly TaskCompletionSource<bool> stopTask = new TaskCompletionSource<bool>();
 
         public event Action<IIpcRegistration, IRequestContext> OnClientConnect;
         public event Action<IRequestContext> OnClientReady;
@@ -35,21 +36,20 @@ namespace Unity.Ipc
         /// </summary>
         public override async Task Initialize()
         {
-            await base.Initialize();
+            var initTask = base.Initialize();
+
+            // protect against multiple initialization
+            if (initTask.IsCompleted)
+                return;
 
             socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
             socket.Bind(new IPEndPoint(IPAddress.Loopback, Configuration.Port));
             socket.Listen(128);
 
-            ThreadPool.QueueUserWorkItem(async _ => await InternalListen().ConfigureAwait(false));
-        }
+            ThreadPool.QueueUserWorkItem(_ => InternalStartServer().Forget());
 
-        public override async Task Run()
-        {
-            if (socket == null)
-                await Initialize();
-
-            await stopTask.Task;
+            FinishInitialize(true);
+            await initTask;
         }
 
         public IpcServer ClientConnecting(Action<IIpcRegistration, IRequestContext> onConnect)
@@ -85,23 +85,21 @@ namespace Unity.Ipc
             OnClientReady?.Invoke(context);
         }
 
-        private async Task InternalListen()
+        protected override void RaiseOnStart()
         {
+            base.RaiseOnStart();
+
+            if (!LocalTargets.Any(x => x is IServerInformation))
+                RegisterLocalTarget(Configuration.GetServerInformation());
+        }
+
+        private async Task InternalStartServer()
+        {
+            if (!Start(new MemoryStream(), false))
+                return;
+
             try
             {
-                // add any instances that were added prior to start getting called
-                AddTargets();
-
-                RaiseOnStart();
-
-                if (!LocalTargets.Any(x => x is IServerInformation))
-                    RegisterLocalTarget(Configuration.GetServerInformation());
-
-                // add anything that was registered on the start callback
-                AddTargets();
-
-                RaiseOnReady();
-
                 // listen to clients until the server shuts down
                 while (!Token.IsCancellationRequested)
                 {
@@ -114,17 +112,12 @@ namespace Unity.Ipc
                     if (Token.IsCancellationRequested)
                         break;
 
-                    new Task(() => HandleClientConnection(socketTask.Result), Token, TaskCreationOptions.None).Start();
+                    new Task(sock => HandleClientConnection((Socket)sock), socketTask.Result, Token, TaskCreationOptions.None).Start();
                 }
-
-                RaiseOnStop();
-
-                stopTask.TrySetResult(true);
             }
             catch (Exception ex)
             {
-                stopTask.SetException(ex);
-                throw;
+                FinishStop(false, ex);
             }
         }
 
@@ -134,11 +127,6 @@ namespace Unity.Ipc
             var client = new IpcClient(Configuration, Token)
                          .Starting(RaiseOnClientConnect)
                          .Ready(RaiseOnClientReady);
-
-            foreach (var type in RemoteTypes)
-            {
-                client.RegisterRemoteTarget(type);
-            }
 
             foreach (var obj in RemoteTargets)
             {
@@ -150,16 +138,17 @@ namespace Unity.Ipc
                 client.RegisterLocalTarget(obj);
             }
 
-            client.Disconnected += args => RaiseOnClientDisconnect(client, args);
+            client.OnDisconnected += args => RaiseOnClientDisconnect(client, args);
+            client.Start(new NetworkStream(socket));
+        }
+    }
 
-            try
-            {
-                client.InternalStart(socket);
-            }
-            catch (Exception)
-            {
-                client.Dispose();
-            }
+    static class HelperExtensions
+    {
+        public static void Forget(this Task task) { }
+        public static void Rethrow(this Exception exception)
+        {
+            ExceptionDispatchInfo.Capture(exception).Throw();
         }
     }
 }

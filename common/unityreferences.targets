@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="**\*.meta;*.DotSettings;*.ncrunch*;**\*.asmdef;bin\**;obj\**;LICENSE;version.json;package.json" />
+    <None Remove="**\*.meta;*.DotSettings;*.ncrunch*;**\*.asmdef;bin\**;obj\**;LICENSE.md;version.json;package.json" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -18,8 +18,8 @@
     <HubInstallDir Condition="'$(HubInstallDir)' == '' and '$(WhatOS)' == 'win'">C:\Program Files\Unity\Hub\Editor</HubInstallDir>
     <HubInstallDir Condition="'$(HubInstallDir)' == '' and '$(WhatOS)' == 'mac'">\Applications\Unity\Hub\Editor</HubInstallDir>
     <HubInstallDir Condition="!Exists('$(HubInstallDir)')"></HubInstallDir>
-    <UnityDir Condition="$(UnityDir) == '' and Exists('$(SolutionDir)\script\lib\Managed\UnityEditor.dll')">$(SolutionDir)script\lib\</UnityDir>
-    <UnityDir Condition="$(UnityDir) == '' and Exists('$(SolutionDir)\lib\Managed\UnityEditor.dll')">$(SolutionDir)lib\</UnityDir>
+    <UnityDir Condition="$(UnityDir) == '' and Exists('$(RootDir)\script\lib\Managed\UnityEditor.dll')">$(RootDir)script\lib\</UnityDir>
+    <UnityDir Condition="$(UnityDir) == '' and Exists('$(RootDir)\lib\Managed\UnityEditor.dll')">$(RootDir)lib\</UnityDir>
     <UnityDir Condition="$(UnityDir) == '' and Exists('\Applications\Unity\Unity.app\Contents\Managed\UnityEditor.dll')">\Applications\Unity\Unity.app\Contents\</UnityDir>
     <UnityDir Condition="$(UnityDir) == '' and Exists('C:\Program Files\Unity\Editor\Data\Managed\UnityEditor.dll')">C:\Program Files\Unity\Editor\Data\</UnityDir>
     <UnityDir Condition="$(UnityDir) == '' and Exists('C:\Program Files (x86)\Unity\Editor\Data\Managed\UnityEditor.dll')">C:\Program Files (x86)\Unity\Editor\Data\</UnityDir>
@@ -117,7 +117,7 @@
           3. UnityEditor.TestRunner.dll to the {0}lib\UnityExtensions/Unity/TestRunner/Editor folder
       </UnityDLLsMissingErrorText>
     </PropertyGroup>
-    <Error Condition="'$(UnityDir)' == ''" Text="$([System.String]::Format('$(UnityDLLsMissingErrorText)', '$(SolutionDir)'))" />
+    <Error Condition="'$(UnityDir)' == ''" Text="$([System.String]::Format('$(UnityDLLsMissingErrorText)', '$(RootDir)'))" />
   </Target>
 
 </Project>

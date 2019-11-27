@@ -187,7 +187,7 @@ namespace Unity.Ipc.Hosted
             OnReady = null;
         }
 
-        protected void RaiseOnStop(THost ipc)
+        protected void RaiseOnStop(Ipc ipc)
         {
             OnStop?.Invoke(ServiceProvider);
             OnStop = null;
