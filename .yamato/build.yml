@@ -14,14 +14,17 @@ build:
     - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
     - |
       set RELEASE=0
+      if "x%GIT_BRANCH%"=="xmaster" set RELEASE=1
       if "x%GIT_TAG%"!==!"x" set RELEASE=1
       if "%RELEASE%"=="1" (build -r -p) else (build -r)
     - |
       set RELEASE=0
+      if "x%GIT_BRANCH%"=="xmaster" set RELEASE=1
       if "x%GIT_TAG%"!==!"x" set RELEASE=1
       if "%RELEASE%"=="1" (test -r -p) else (test -r)
     - |
       set RELEASE=0
+      if "x%GIT_BRANCH%"=="xmaster" set RELEASE=1
       if "x%GIT_TAG%"!==!"x" set RELEASE=1
       if "%RELEASE%"=="1" (pack -r -p -u) else (pack -r -u)
 
