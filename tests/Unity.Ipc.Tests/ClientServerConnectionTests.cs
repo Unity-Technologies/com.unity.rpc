@@ -151,10 +151,8 @@ namespace Unity.Ipc.Tests
         {
             var cts = new CancellationTokenSource();
 
-            var protocolRevision = 2;
-            var tcpPort = _uniqueValues.NextTcpPortWithRange(protocolRevision + 1);
+            var configuration = new Configuration();
 
-            var configuration = Helpers.GetConfiguration(tcpPort, protocolRevision);
             var server = await Helpers.NewServer<BasicMathService>(configuration, cts);
 
             var clientA = await Helpers.NewClient<IMathSession>(configuration, cts);

@@ -6,7 +6,8 @@ namespace Unity.Ipc
     public class Configuration
     {
         private static IFormatterResolver[] defaultResolvers;
-        public const int DefaultPort = 59595;
+
+        public const int DefaultPort = 0;
         public const string DefaultProtocolVersion = "1.0";
 
         public static IFormatterResolver[] DefaultResolvers
@@ -51,6 +52,9 @@ namespace Unity.Ipc
             return new ServerInformation { Version = ProtocolVersion };
         }
 
+        /// <summary>
+        /// Default port is 0.
+        /// </summary>
         public int Port { get; set; } = DefaultPort;
         public IpcVersion ProtocolVersion { get; set; } = IpcVersion.Parse(DefaultProtocolVersion);
         public string Version { get => ProtocolVersion.Version; set => ProtocolVersion = IpcVersion.Parse(value); }

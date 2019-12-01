@@ -44,6 +44,7 @@ namespace Unity.Ipc
 
             socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
             socket.Bind(new IPEndPoint(IPAddress.Loopback, Configuration.Port));
+            Configuration.Port = ((IPEndPoint)socket.LocalEndPoint).Port;
             socket.Listen(128);
 
             ThreadPool.QueueUserWorkItem(_ => InternalStartServer().Forget());
