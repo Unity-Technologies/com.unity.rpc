@@ -29,6 +29,8 @@ namespace Unity.Ipc.Hosted
         public event Action<IServiceProvider> OnStop;
         public event Action<IServiceProvider> OnReady;
 
+        private event Action<IIpcRegistration, IRequestContext> RegisterOnStart;
+
         public IpcHost()
         {
             this
@@ -81,7 +83,7 @@ namespace Unity.Ipc.Hosted
             where TProxy : class
         {
             ConfigureServices((_, collection) => collection.AddSingleton<TProxy>());
-            Ipc.Starting((registration, context) => registration.RegisterRemoteTarget(ServiceProvider.GetService(typeof(TProxy))));
+            RegisterOnStart += (registration, context) => registration.RegisterRemoteTarget(ServiceProvider.GetService(typeof(TProxy)));
             return Host;
         }
 
@@ -95,7 +97,7 @@ namespace Unity.Ipc.Hosted
             where TProxy : class
         {
             ConfigureServices((_, collection) => collection.AddSingleton(factory));
-            Ipc.Starting((registration, context) => registration.RegisterRemoteTarget(ServiceProvider.GetService(typeof(TProxy))));
+            RegisterOnStart += (registration, context) => registration.RegisterRemoteTarget(ServiceProvider.GetService(typeof(TProxy)));
             return Host;
         }
 
@@ -108,7 +110,7 @@ namespace Unity.Ipc.Hosted
             where T : class
         {
             ConfigureServices((_, collection) => collection.AddSingleton<T>());
-            Ipc.Starting((registration, context) => registration.RegisterLocalTarget(ServiceProvider.GetService(typeof(T))));
+            RegisterOnStart += (registration, context) => registration.RegisterLocalTarget(ServiceProvider.GetService(typeof(T)));
             return Host;
         }
 
@@ -122,7 +124,7 @@ namespace Unity.Ipc.Hosted
             where T : class
         {
             ConfigureServices((_, collection) => collection.AddSingleton(factory));
-            Ipc.Starting((registration, context) => registration.RegisterLocalTarget(ServiceProvider.GetService(typeof(T))));
+            RegisterOnStart += ((registration, context) => registration.RegisterLocalTarget(ServiceProvider.GetService(typeof(T))));
             return Host;
         }
 
@@ -176,6 +178,9 @@ namespace Unity.Ipc.Hosted
         {
             globalRegistration = registration;
             globalContext = context;
+
+            RegisterOnStart?.Invoke(registration, context);
+            RegisterOnStart = null;
 
             OnStart?.Invoke(ServiceProvider);
             OnStart = null;

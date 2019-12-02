@@ -7,6 +7,7 @@
     <FullBuild Condition="'$(SolutionName)' == 'Unity.Ipc'">true</FullBuild>
     <IsPackable Condition="'$(FullBuild)' != 'true'">false</IsPackable>
     <Description>IPC library.</Description>
+    <CodeAnalysisRuleSet>$(RootDir)src\rules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>

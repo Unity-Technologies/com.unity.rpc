@@ -10,6 +10,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="SpoiledCat.Extensions.Configuration.ExtendedCommandLine" Version="1.0.5" />
+    <PackageReference Include="SpoiledCat.Extensions.Configuration.Yaml" Version="1.0.4" />
+    <PackageReference Include="YamlDotNet" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>

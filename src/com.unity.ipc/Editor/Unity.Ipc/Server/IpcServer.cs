@@ -129,9 +129,9 @@ namespace Unity.Ipc
                          .Starting(RaiseOnClientConnect)
                          .Ready(RaiseOnClientReady);
 
-            foreach (var obj in RemoteTargets)
+            foreach (var type in RemoteTypes)
             {
-                client.RegisterRemoteTarget(obj);
+                client.RegisterRemoteTarget(type);
             }
 
             foreach (var obj in LocalTargets)

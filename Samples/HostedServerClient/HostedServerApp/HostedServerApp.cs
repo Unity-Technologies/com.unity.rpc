@@ -10,6 +10,7 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using Shared;
+using SpoiledCat.Extensions.Configuration;
 using Unity.Ipc;
 using Unity.Ipc.Hosted;
 using Unity.Ipc.Hosted.Extensions;
@@ -18,14 +19,12 @@ namespace HostedClientServer
 {
     class HostedServerApp
     {
-        private const string AppSettingsFile = "appsettings.json";
-
         static async Task Main(string[] args)
         {
             // monitoring when the ipc host shuts down
             var exiting = new CancellationTokenSource();
 
-            // default configuration object. the values in it will be set by the ConfigureAppConfiguration call below
+            // Read command line args and other settings to populate a configuration object
             var configuration = GetConfiguration(args);
 
             // our ipc host
@@ -76,6 +75,8 @@ namespace HostedClientServer
             }
         }
 
+        private const string YamlSettingsFile = "appsettings.settings";
+        private const string JsonSettingsFile = "appsettings.json";
         // configure the host environment. this will be inherited into the app environment
         private static Configuration GetConfiguration(string[] args)
         {
@@ -84,11 +85,12 @@ namespace HostedClientServer
 
             var builder = new ConfigurationBuilder()
                           .SetBasePath(Directory.GetCurrentDirectory())
-                          .AddJsonFile(AppSettingsFile, optional: true, reloadOnChange: true)
+                          .AddJsonFile(JsonSettingsFile + ".json", optional: true, reloadOnChange: false)
+                          .AddYamlFile(YamlSettingsFile + ".settings", optional: true, reloadOnChange: false)
                           .AddEnvironmentVariables("HOSTEDSERVER_")
-                          .AddCommandLine(args);
+                          .AddExtendedCommandLine(args);
             var conf = builder.Build();
-            var configuration = conf.Get<Configuration>();
+            var configuration = conf.Get<Configuration>() ?? new Configuration();
             return configuration;
         }
 
