@@ -1,20 +1,4 @@
 {
-  "scopedRegistries": [
-    {
-      "name": "Metadata",
-      "url": "http://packages.unity.com",
-      "scopes": [
-        "com.unity.package-manager.metadata"
-      ]
-    },
-    {
-      "name": "Internal",
-      "url": "https://artifactory.internal.unity3d.com/api/npm/core-npm",
-      "scopes": [
-        "com.unity.editor.tasks"
-      ]
-    }
-  ],
   "dependencies": {
     "com.unity.ipc": "1.0.16-preview",
     "com.unity.ipc.tests": "1.0.16-preview",

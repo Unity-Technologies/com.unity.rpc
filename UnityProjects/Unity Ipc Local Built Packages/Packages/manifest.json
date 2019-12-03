@@ -1,13 +1,5 @@
 {
-  "scopedRegistries": [
-    {
-      "name": "Internal",
-      "url": "https://artifactory.internal.unity3d.com/api/npm/core-npm",
-      "scopes": [
-        "com.unity.editor.tasks"
-      ]
-    }
-  ],
+  "registry": "https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-candidates",
   "dependencies": {
     "com.unity.ipc": "file:../../../build/packages/com.unity.ipc",
     "com.unity.ipc.tests": "file:../../../build/packages/com.unity.ipc.tests",
@@ -19,6 +11,6 @@
     "com.unity.modules.ui": "1.0.0"
   },
   "testables": [
-    "com.unity.ipc.tests"
+    "com.unity.ipc"
   ]
 }

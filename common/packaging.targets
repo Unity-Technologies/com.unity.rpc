@@ -6,14 +6,26 @@
   <Import Project="packageversionfiles.targets" />
 
   <ItemGroup>
-    <PackageReference Include="SpoiledCat.MSBuild.Tasks.FileUpdate" Version="1.0.13" PrivateAssets="All" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+    <PackageReference Include="SpoiledCat.MSBuild.Tasks.FileUpdate" Version="1.0.13" PrivateAssets="All" IncludeAssets="runtime; build; native; contentfiles; analyzers" Private="false" />
+
   </ItemGroup>
+
+  <Target Name="PreventMSBuildSDKCopyLocal" AfterTargets="ResolveReferences">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="
+        $([System.String]::new('%(ReferenceCopyLocalPaths.NuGetPackageId)').StartsWith('Microsoft.Build')) or
+        $([System.String]::new('%(ReferenceCopyLocalPaths.NuGetPackageId)').StartsWith('Microsoft.Win32')) or
+        $([System.String]::new('%(ReferenceCopyLocalPaths.NuGetPackageId)').StartsWith('System.Collections.Immutable')) or
+        $([System.String]::new('%(ReferenceCopyLocalPaths.NuGetPackageId)').StartsWith('System.Text'))
+        " />
+    </ItemGroup>
+  </Target>
 
   <!-- Assemble all sources into a folder called (PackageName) -->
   <Target Name="EnumeratePackageFiles" Returns="@(SourcesToCopy)">
     <CreateItem
       Include="$(PackageSourceRootFull)**\*.*;$(RootDir)\extras\$(PackageName)\**\*.*"
-      Exclude="$(PackageSourceRootFull)**\*.csproj*;$(PackageSourceRootFull)**\*.ncrunch*;$(PackageSourceRootFull)**\obj\**;$(PackageSourceRootFull)version.json*;$(PackageSourceRootFull)Tests\**;$(RootDir)\extras\$(PackageName)\Tests\**">
+      Exclude="$(PackageSourceRootFull)**\*.csproj*;$(PackageSourceRootFull)**\*.ncrunch*;$(PackageSourceRootFull)**\obj\**;$(PackageSourceRootFull)version.json*;$(PackageSourceRootFull)Tests\**;$(RootDir)\extras\$(PackageName)\Tests\**;$(PackageSourceRootFull)Tests.meta">
       <Output TaskParameter="Include" ItemName="SourcesToCopy" />
     </CreateItem>
   </Target>
@@ -40,9 +52,9 @@
      Condition=" '$(TargetFramework)' == 'net471' " >
 
     <PropertyGroup>
-      <NpmVersion Condition=" '$(NpmVersionSuffix)' == '' ">$(NuGetPackageVersion)</NpmVersion>
-      <NpmVersion Condition=" '$(NpmVersionSuffix)' != '' and '$(PublicRelease)' != 'true'">$(BuildVersionSimple)$(NpmVersionSuffix)-g$(GitCommitIdShort)</NpmVersion>
-      <NpmVersion Condition=" '$(NpmVersionSuffix)' != '' and '$(PublicRelease)' == 'true'">$(NuGetPackageVersion)$(NpmVersionSuffix)</NpmVersion>
+      <NeedsSuffix Condition="'$(PublicRelease)' != 'true' and '$(NpmVersionSuffix)' != '' and !$(NuGetPackageVersion.Contains('$(NpmVersionSuffix)'))">true</NeedsSuffix>
+      <NpmVersion Condition=" '$(NeedsSuffix)' != 'true' ">$(NuGetPackageVersion)</NpmVersion>
+      <NpmVersion Condition=" '$(NeedsSuffix)' == 'true'">$(BuildVersionSimple)$(NpmVersionSuffix)-g$(GitCommitIdShort)</NpmVersion>
     </PropertyGroup>
 
     <FileUpdate
@@ -139,9 +151,9 @@
     Condition="Exists('$(PackageSourceRoot)\Tests') and '$(TargetFramework)' == 'net471' " >
 
     <PropertyGroup>
-      <NpmVersion Condition=" '$(NpmVersionSuffix)' == '' ">$(NuGetPackageVersion)</NpmVersion>
-      <NpmVersion Condition=" '$(NpmVersionSuffix)' != '' and '$(PublicRelease)' != 'true'">$(BuildVersionSimple)$(NpmVersionSuffix)-g$(GitCommitIdShort)</NpmVersion>
-      <NpmVersion Condition=" '$(NpmVersionSuffix)' != '' and '$(PublicRelease)' == 'true'">$(NuGetPackageVersion)$(NpmVersionSuffix)</NpmVersion>
+      <NeedsSuffix Condition="'$(PublicRelease)' != 'true' and '$(NpmVersionSuffix)' != '' and !$(NuGetPackageVersion.Contains('$(NpmVersionSuffix)'))">true</NeedsSuffix>
+      <NpmVersion Condition=" '$(NeedsSuffix)' != 'true' ">$(NuGetPackageVersion)</NpmVersion>
+      <NpmVersion Condition=" '$(NeedsSuffix)' == 'true'">$(BuildVersionSimple)$(NpmVersionSuffix)-g$(GitCommitIdShort)</NpmVersion>
     </PropertyGroup>
 
     <FileUpdate
@@ -161,6 +173,17 @@
       Files="$(PublishTo)$(PackageTestName)\package.json"
       Regex="&quot;directory&quot;: &quot;.*&quot;"
       ReplacementText="&quot;directory&quot;: &quot;src/$(PackageName)/Tests&quot;" />
+
+    <FileUpdate
+      Files="$(PublishTo)$(PackageTestName)\package.json"
+      Regex="&quot;revision&quot;: &quot;.*&quot;"
+      ReplacementText="&quot;revision&quot;: &quot;$(GitCommitId)&quot;"
+      Encoding="utf-8-without-bom" />
+
+    <FileUpdate
+      Files="$(PublishTo)$(PackageName)\package.json"
+      Regex="&quot;testPackages&quot;"
+      ReplacementText="&quot;relatedPackages&quot;" />
 
   </Target>
 

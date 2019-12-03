@@ -12,7 +12,7 @@ test_{{ platform.name }}_{{ editor.version }}:
   commands:
     - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
 {% for package in packages %}
-    - upm-ci package test --package-path build\upm\{{ package.name }} -u {{editor.version}}
+    - upm-ci package test --package-path build\packages\{{ package.name }} -u {{editor.version}}
 {% endfor %}
 
   dependencies:
@@ -28,12 +28,11 @@ test_{{ platform.name }}_{{ editor.version }}:
 test_trigger:
   name: Build and Test All
   dependencies:
-    - .yamato/build.yml#build
-    # {% for editor in test_editors %}
-    # {% for platform in test_platforms %}
-    # - .yamato/test.yml#test_{{platform.name}}_{{editor.version}}
-    # {% endfor %}
-    # {% endfor %}
+    {% for editor in test_editors %}
+    {% for platform in test_platforms %}
+    - .yamato/test.yml#test_{{platform.name}}_{{editor.version}}
+    {% endfor %}
+    {% endfor %}
   triggers:
     pull_requests:
       - targets:
@@ -42,6 +41,7 @@ test_trigger:
     branches:
       only:
       - "master"
+      - "/v\\d+\\.\\d+.*/"
     tags:
       only:
       - "/.*/"
