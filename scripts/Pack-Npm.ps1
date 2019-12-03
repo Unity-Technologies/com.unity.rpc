@@ -21,7 +21,7 @@ Get-ChildItem -Directory $srcDir | % {
     if (Test-Path "$srcDir\$($_)\package.json") {
         try {
             Push-Location (Join-Path $srcDir $_.Name)
-            $package = Invoke-Command -Fatal { & npm pack -qf }
+            $package = Invoke-Command -Fatal { & npm pack -q }
             $package = "$package".Trim()
             $tgt = Join-Path $targetDir $package
             Move-Item $package $tgt -Force
