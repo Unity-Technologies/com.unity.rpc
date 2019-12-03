@@ -1,0 +1,24 @@
+{
+  "scopedRegistries": [
+    {
+      "name": "Internal",
+      "url": "https://artifactory.internal.unity3d.com/api/npm/core-npm",
+      "scopes": [
+        "com.unity.editor.tasks"
+      ]
+    }
+  ],
+  "dependencies": {
+    "com.unity.ipc": "file:../../../build/packages/com.unity.ipc",
+    "com.unity.ipc.tests": "file:../../../build/packages/com.unity.ipc.tests",
+    "com.unity.package-manager-ui": "2.2.0",
+    "com.unity.test-framework": "1.0.13",
+    "com.unity.modules.imageconversion": "1.0.0",
+    "com.unity.modules.imgui": "1.0.0",
+    "com.unity.modules.jsonserialize": "1.0.0",
+    "com.unity.modules.ui": "1.0.0"
+  },
+  "testables": [
+    "com.unity.ipc.tests"
+  ]
+}

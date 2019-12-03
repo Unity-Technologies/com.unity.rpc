@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <PackageTestName>$(PackageName).tests</PackageTestName>
+  </PropertyGroup>
+
+  <Target Name="CopyHelperBinariesToPackage"
+      DependsOnTargets="AfterBuild;EnumerateHelperBinaries"
+      AfterTargets="AfterBuild"
+      Inputs="@(BinariesToCopy)"
+      Outputs="@(BinariesToCopy->'$(RootDir)$(PackageSource)$(PackageName)\Tests\$(PackageSubFolder)%(RecursiveDir)%(Filename)%(Extension)');@(BinariesToCopy->'$(PublishTo)$(PackageTestName)$(PackageSubFolder)%(RecursiveDir)%(Filename)%(Extension)')"
+      >
+
+    <Copy
+      SourceFiles="@(BinariesToCopy)"
+      DestinationFiles="@(BinariesToCopy->'$(PublishTo)$(PackageTestName)$(PackageSubFolder)%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true"
+      />
+
+    <Copy
+      SourceFiles="@(BinariesToCopy)"
+      DestinationFiles="@(BinariesToCopy->'$(RootDir)$(PackageSource)$(PackageName)\Tests\$(PackageSubFolder)%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true"
+      />
+
+  </Target>
+
+  <Target Name="CleanHelperArtifacts" AfterTargets="AfterClean">
+    <RemoveDir Directories="$(PublishTo)$(PackageTestName)$(PackageSubFolder);$(RootDir)$(PackageSource)$(PackageName)$(PackageSubFolder)" />
+  </Target>
+
+  <Target Name="EnumerateHelperBinaries" Returns="@(BinariesToCopy)">
+    <CreateItem Include="$(OutputPath)**\*.*" Exclude="$(OutputPath)$(AssemblyName)*;$(OutputPath)nunit*;$(OutputPath)*Test*;$(OutputPath)Castle*;$(OutputPath)Microsoft*;$(OutputPath)System.*;$(OutputPath)NSubstitute*;$(OutputPath)**\.vs\**">
+      <Output TaskParameter="Include" ItemName="BinariesToCopy" />
+    </CreateItem>
+  </Target>
+
+</Project>

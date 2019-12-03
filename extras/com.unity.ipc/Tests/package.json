@@ -1,0 +1,16 @@
+{
+    "name": "com.unity.ipc.tests",
+    "displayName": "Tests - Unity Ipc",
+    "description": "Tests - Unity Ipc",
+    "type": "tests",
+    "version": "0.0.0-placeholder",
+    "repository" : {
+      "type" : "git",
+      "url": "ssh://git@github.cds.internal.unity3d.com:unity/Unity.Ipc.git",
+      "directory": ""
+    },
+    "dependencies": {
+        "com.unity.ipc": "0.0.0-placeholder",
+        "com.unity.editor.tasks": "1.1.17"
+    }
+}
