@@ -19,9 +19,23 @@ test_{{ platform.name }}_{{ editor.version }}:
     - .yamato/build.yml#build
 
   artifacts:
-    logs:
+    nuget:
       paths:
-        - "upm-ci~/test-results/**/*"
+        - "build/nuget/**/*nupkg"
+        - "nuget.config"
+    packman:
+      paths:
+        - "upm-ci~/**/*"
+    binaries:
+      paths:
+        - "build/bin/**/*"
+    tests:
+      paths:
+        - "build/tests/bin/**/*"
+        - "tests/**/TestResults/*"
+    sources:
+      paths:
+        - "build/packages/**/*"
 {% endfor %}
 {% endfor %}
 

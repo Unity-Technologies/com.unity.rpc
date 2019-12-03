@@ -142,27 +142,48 @@ namespace Unity.Ipc
             await startTask.Task;
         }
 
+
         /// <summary>
-        /// Runs until stopped or disconnected.
+        /// Starts the ipc host, attaching it to the given stream.
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <returns></returns>
+        public virtual bool Start(Stream stream) => Start(stream, true);
+
+        /// <summary>
+        /// Runs until stopped or disconnected. This is equivalent to <see cref="Start" /> and <see cref="WaitUntilDone" /> calls.
         /// </summary>
         /// <returns></returns>
         public virtual async Task Run()
         {
             await Initialize();
-            await stopTask.Task;
+            await WaitUntilDone();
         }
 
+        /// <summary>
+        /// Stop the server. You can run this on any thread and it'll trigger a shutdown, which will complete both <see cref="Run" /> and <see cref="WaitUntilDone" />
+        /// </summary>
         public virtual void Stop()
         {
             RaiseOnStop();
             FinishStop();
         }
 
-        public virtual bool Start(Stream stream)
+        /// <summary>
+        /// After Stop has been called, you can wait on this to asynchronously block until shutdown is complete
+        /// </summary>
+        /// <returns></returns>
+        public virtual async Task WaitUntilDone()
         {
-            return Start(stream, true);
+            await stopTask.Task;
         }
 
+        /// <summary>
+        /// Starts the ipc host, attaching it to the given stream.
+        /// </summary>
+        /// <param name="stream">The stream to attach to.</param>
+        /// <param name="startListening">The IpcServer sets this to false, as the stream here is not for use with the rpc object and should not be listened to. Instead, when clients connect, their sockets will be attached to rpc objects.</param>
+        /// <returns></returns>
         protected bool Start(Stream stream, bool startListening)
         {
             try

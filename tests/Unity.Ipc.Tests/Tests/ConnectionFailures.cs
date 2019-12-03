@@ -6,7 +6,7 @@ namespace Unity.Ipc.Tests
 	public class ConnectionFailures
 	{
 		//[Fact]
-        
+
 		//public async Task InvalidProxyMakesRunThrow()
 		//{
 		//	var conf = new Configuration { Port = new Random().Next(44444, 55555) };

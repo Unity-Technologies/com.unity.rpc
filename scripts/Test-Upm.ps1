@@ -16,8 +16,10 @@ if ($Trace) {
 $srcdir = Join-Path $rootDirectory 'src'
 
 Get-ChildItem -Directory $srcdir | % {
-    Write-Output "Testing $($_.Name)"
+    if (Test-Path "$srcDir\$($_)\package.json") {
+        Write-Output "Testing $($_.Name)"
 
-    $packageDir = Join-Path $srcdir $_.Name
-    Invoke-Command -Fatal { & upm-ci package test --package-path $packageDir -u $UnityVersion }
+        $packageDir = Join-Path $srcdir $_.Name
+        Invoke-Command -Fatal { & upm-ci package test --package-path $packageDir -u $UnityVersion }
+    }
 }

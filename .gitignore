@@ -303,3 +303,5 @@ upm-ci~/
 setenv.sh
 .Editor/
 TestResults
+.bin/
+.download/

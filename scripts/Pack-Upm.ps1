@@ -19,7 +19,6 @@ New-Item -itemtype Directory -Path $upmDir -Force -ErrorAction SilentlyContinue
 
 # the loops I have to go throught to get upm to do the right thing...
 Get-ChildItem -Directory $srcDir | % {
-
     if (Test-Path "$srcDir\$($_)\package.json") {
         Write-Output "Packing $($_.Name)"
 
