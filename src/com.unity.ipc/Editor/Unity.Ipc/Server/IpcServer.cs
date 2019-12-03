@@ -44,6 +44,7 @@ namespace Unity.Ipc
 
             socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
             socket.Bind(new IPEndPoint(IPAddress.Loopback, Configuration.Port));
+            Configuration.Port = ((IPEndPoint)socket.LocalEndPoint).Port;
             socket.Listen(128);
 
             ThreadPool.QueueUserWorkItem(_ => InternalStartServer().Forget());
@@ -128,9 +129,9 @@ namespace Unity.Ipc
                          .Starting(RaiseOnClientConnect)
                          .Ready(RaiseOnClientReady);
 
-            foreach (var obj in RemoteTargets)
+            foreach (var type in RemoteTypes)
             {
-                client.RegisterRemoteTarget(obj);
+                client.RegisterRemoteTarget(type);
             }
 
             foreach (var obj in LocalTargets)

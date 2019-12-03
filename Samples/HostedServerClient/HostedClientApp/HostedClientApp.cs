@@ -15,17 +15,18 @@ using Unity.Ipc.Hosted.Extensions;
 
 namespace HostedClientServer
 {
+    using System.IO;
+    using SpoiledCat.Extensions.Configuration;
+
     class HostedClientApp
     {
-        private const string AppSettingsFile = "appsettings.json";
-
         static async Task Main(string[] args)
         {
             // monitoring when the ipc host shuts down
             var exiting = new CancellationTokenSource();
 
-            // default configuration object. the values in it will be set by the ConfigureAppConfiguration call below
-            var configuration = new Configuration();
+            // Read command line args and other settings to populate a configuration object
+            var configuration = GetConfiguration(args);
 
             // our ipc host
             var host = new IpcHostedClient(configuration);
@@ -60,7 +61,6 @@ namespace HostedClientServer
             });
 
             ConfigureLogging(host);
-            SetupPortAndOtherSettings(host, configuration, args);
 
             // set up a console lifetime so it handles ctrl+c and app shutdown
             host.UseConsoleLifetime();
@@ -76,24 +76,23 @@ namespace HostedClientServer
             }
         }
 
+        private const string YamlSettingsFile = "appsettings.settings";
+        private const string JsonSettingsFile = "appsettings.json";
         // configure the host environment. this will be inherited into the app environment
-        private static void SetupPortAndOtherSettings(IpcHostedClient host, Configuration configuration, string[] args)
+        private static Configuration GetConfiguration(string[] args)
         {
             // configure app settings, merging settings from a json file, environment variables
             // and command line arguments into the configuration object
 
-            host.ConfigureHostConfiguration(c => c.AddEnvironmentVariables("HOSTEDSERVER_"));
-            host.ConfigureAppConfiguration((context, app) => {
-                var env = context.HostingEnvironment;
-
-                app.AddJsonFile(AppSettingsFile, optional: true, reloadOnChange: true);
-                app.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                app.AddEnvironmentVariables();
-                app.AddCommandLine(args);
-
-                var confRoot = app.Build();
-                confRoot.Bind(configuration);
-            });
+            var builder = new ConfigurationBuilder()
+                          .SetBasePath(Directory.GetCurrentDirectory())
+                          .AddJsonFile(JsonSettingsFile + ".json", optional: true, reloadOnChange: false)
+                          .AddYamlFile(YamlSettingsFile + ".settings", optional: true, reloadOnChange: false)
+                          .AddEnvironmentVariables("HOSTEDSERVER_")
+                          .AddExtendedCommandLine(args);
+            var conf = builder.Build();
+            var configuration = conf.Get<Configuration>() ?? new Configuration();
+            return configuration;
         }
 
         private static void ConfigureLogging(IpcHostedClient host)

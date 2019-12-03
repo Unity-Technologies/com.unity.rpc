@@ -167,7 +167,8 @@ namespace Unity.Ipc
         {
             try
             {
-                Attach(stream);
+                if (startListening)
+                    Attach(stream);
 
                 // add any instances that were added prior to start getting called
                 AddTargets();
@@ -278,20 +279,22 @@ namespace Unity.Ipc
 
         internal void AddTargets()
         {
-            // generate and register proxies
-            foreach (var type in RemoteTypes)
+            if (rpc != null)
             {
-                Register(TargetType.Remote, GenerateAndAddProxy(type));
+                // generate and register proxies
+                foreach (var type in RemoteTypes)
+                {
+                    Register(TargetType.Remote, GenerateAndAddProxy(type));
+                }
+                remoteTypes.Clear();
+
+                foreach (var obj in remoteProxies)
+                {
+                    Register(TargetType.Remote, AddRemoteProxy(obj));
+                }
+
+                remoteProxies.Clear();
             }
-
-            remoteTypes.Clear();
-
-            foreach (var obj in remoteProxies)
-            {
-                Register(TargetType.Remote, AddRemoteProxy(obj));
-            }
-
-            remoteProxies.Clear();
 
             foreach (var obj in localTargets)
             {

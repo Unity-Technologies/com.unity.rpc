@@ -40,7 +40,6 @@ namespace Unity.Ipc.Hosted
         private ClientData currentClientData;
         private static object lck = new object();
 
-
         public IpcHostedServer(Configuration configuration)
         {
             Host = this;
