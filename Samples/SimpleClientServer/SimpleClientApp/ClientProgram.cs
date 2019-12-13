@@ -2,7 +2,7 @@
 using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
-using Unity.Ipc;
+using Unity.Rpc;
 using Mono.Options;
 using Serilog;
 using Serilog.Core;
@@ -11,6 +11,8 @@ using Shared;
 
 namespace SimpleClientServer
 {
+    using ClientSample;
+
     class ClientConfiguration : Configuration
     {
         public ClientConfiguration(int port)
@@ -38,16 +40,16 @@ namespace SimpleClientServer
             var cts = new CancellationTokenSource();
 
             // our ipc host
-            var client = new IpcClient(new ClientConfiguration(port), cts.Token);
+            var client = new RpcClient(new ClientConfiguration(port), cts.Token);
 
             // these are the IPC interfaces available on the server that the client can call
-            client.RegisterRemoteTarget<IIpcServerSingleton>()
-                  .RegisterRemoteTarget<IIpcServerPerConnection>()
-                  .RegisterRemoteTarget<IIpcClientInfo>();
+            client.RegisterRemoteTarget<IServerSingleton>()
+                  .RegisterRemoteTarget<IServerPerConnection>()
+                  .RegisterRemoteTarget<IClientInfo>();
 
 
             // We could register our client singleton implementation here instead of doing it on the Starting callback if we wanted to.
-            //client.RegisterLocalTarget(new IpcClientSample(client, loggerFactory.CreateLogger(nameof(IpcClientSample))))
+            //client.RegisterLocalTarget(new RpcClientSample(client, loggerFactory.CreateLogger(nameof(RpcClientSample))))
 
             // this is called when the client is starting, for registering additional rpc targets or doing other setup things
             client
@@ -55,12 +57,12 @@ namespace SimpleClientServer
                     logger.Debug("Starting client");
 
                     // registering a singleton instance in the Starting callback
-                    registration.RegisterLocalTarget(new IpcClientSample(context, loggerFactory.CreateLogger(nameof(IpcClientSample))));
+                    registration.RegisterLocalTarget(new RpcClientSample(context, loggerFactory.CreateLogger(nameof(RpcClientSample))));
                 })
 
                 // this is called when the client is ready to do things
                 .Ready(async theClient => {
-                    var clientImplementation = theClient.GetLocalTarget<IpcClientSample>();
+                    var clientImplementation = theClient.GetLocalTarget<RpcClientSample>();
                     await clientImplementation.RunUntilQuit(cts.Token);
                 });
 

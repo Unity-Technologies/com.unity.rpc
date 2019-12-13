@@ -70,8 +70,18 @@ publish_packman:
     {% endfor %}
     {% endfor %}
 
-publish_trigger:
+publish_artifactory:
   name: Publish to Artifactory
   dependencies:
     - .yamato/publish.yml#publish_nuget
     - .yamato/publish.yml#publish_npm
+
+publish_trigger:
+  name: Publish
+  dependencies:
+    - .yamato/publish.yml#publish_artifactory
+    - .yamato/publish.yml#publish_packman
+  triggers:
+    tags:
+      only:
+      - "/.*/"

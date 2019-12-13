@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net471;netcoreapp2.2</TargetFrameworks>
+    <RootDir>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\'))</RootDir>
+    <FullBuild Condition="'$(SolutionName)' == 'Unity.Rpc'">true</FullBuild>
+    <IsPackable Condition="'$(FullBuild)' != 'true'">false</IsPackable>
+    <PackageId>Unity.Rpc.Hosted</PackageId>
+    <AssemblyName>Unity.Rpc.Hosted</AssemblyName>
+    <DefaultNamespace>$(AssemblyName)</DefaultNamespace>
+    <Description>RPC library.</Description>
+    <CodeAnalysisRuleSet>$(RootDir)src\rules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="**\*.meta;*.DotSettings;*.ncrunch*;**\*.asmdef;bin\**;obj\**;LICENSE.md;version.json;package.json" />
+    <None Include="$(RootDir)icon.png" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="icon.png" Condition="Exists('$(RootDir)icon.png')"/>
+    <None Include="$(RootDir)LICENSE.md" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="LICENSE.md" Condition="Exists('$(RootDir)LICENSE.md')"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LibLog" Version="5.0.7-build.575">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\com.unity.rpc\Editor\Rpc\Rpc.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(FullBuild)' == 'true'">
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.1.38-beta-g5d1f8441c5" PrivateAssets="all" Private="false" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19367-01" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>

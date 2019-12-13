@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\com.unity.ipc\Editor\Unity.Ipc\Unity.Ipc.csproj" />
-    <ProjectReference Include="..\..\Shared\IpcServerSample\IpcServerSample.csproj" />
+    <ProjectReference Include="..\..\..\src\com.unity.rpc\Editor\Rpc\Rpc.csproj" />
+    <ProjectReference Include="..\..\Shared\ServerSample\ServerSample.csproj" />
     <ProjectReference Include="..\..\Shared\SharedInterfaces\SharedInterfaces.csproj" />
   </ItemGroup>
 

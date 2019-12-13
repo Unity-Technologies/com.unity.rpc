@@ -52,10 +52,13 @@ test_trigger:
       - targets:
           only:
             - "master"
+            - "/v\\d+\\.\\d+.*/"
+            - "/release.*/v\\d+\\.\\d+.*/"
     branches:
       only:
       - "master"
       - "/v\\d+\\.\\d+.*/"
+      - "/release.*/v\\d+\\.\\d+.*/"
     tags:
       only:
       - "/.*/"

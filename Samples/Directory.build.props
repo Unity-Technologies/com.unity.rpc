@@ -1,29 +1,21 @@
 <Project>
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <LangVersion>7.3</LangVersion>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-
-    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))..\</RepoRoot>
-    <RepoBuildPath>$(RepoRoot)build\Samples\</RepoBuildPath>
-    <RepoBinPath>$(RepoBuildPath)bin\</RepoBinPath>
-    <RepoObjPath>$(RepoBuildPath)obj\</RepoObjPath>
-
-    <Authors>Unity Technologies</Authors>
-    <Owners>Unity Technologies</Owners>
-    <Copyright>2019 Unity Technologies. All rights reserved.</Copyright>
-
-    <MicroBuildPackageVersion>2.0.55</MicroBuildPackageVersion>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <NoWarn>NU5104</NoWarn>
     <IsPackable>false</IsPackable>
 
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\'))</RepoRoot>
+    <RepoBuildPath>$(RepoRoot)build\tests\</RepoBuildPath>
+    <RepoBinPath>$(RepoBuildPath)bin\</RepoBinPath>
+    <RepoObjPath>$(RepoBuildPath)obj\</RepoObjPath>
+    <BaseIntermediateOutputPath>$(RepoObjPath)$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <BaseOutputPath Condition=" '$(BaseOutputPath)' == '' ">$(RepoBinPath)$(MSBuildProjectName)\</BaseOutputPath>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning" Version="3.0.26" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19367-01" PrivateAssets="All" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net471" Version="1.0.0-preview.2" PrivateAssets="All" IncludeAssets="runtime; build; native; contentfiles; analyzers" Condition=" '$(TargetFramework)' == 'net471' " />
   </ItemGroup>
+
 </Project>

@@ -14,9 +14,9 @@ using NLog.Config;
 using NLog.Extensions.Logging;
 using NLog.Targets.Seq;
 using NLog.Targets.Wrappers;
-using Unity.Ipc;
-using Unity.Ipc.Hosted;
-using Unity.Ipc.Hosted.Extensions;
+using Unity.Rpc;
+using Unity.Rpc.Hosted;
+using Unity.Rpc.Hosted.Extensions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using LogLevel = NLog.LogLevel;
 
@@ -71,7 +71,7 @@ namespace ClientServerJobSample
             });
 
             await server.Start(cts.Token);
-            await client.Run(cts.Token); 
+            await client.Run(cts.Token);
         }
 
         // configure the host environment. this will be inherited into the app environment
@@ -92,9 +92,9 @@ namespace ClientServerJobSample
 
 
 
-        private static IpcHostedServer ConfigureServer(Configuration configuration, CancellationToken token)
+        private static RpcHostedServer ConfigureServer(Configuration configuration, CancellationToken token)
         {
-            return (IpcHostedServer) new IpcHostedServer(configuration)
+            return (RpcHostedServer) new RpcHostedServer(configuration)
                 .AddRemoteProxy<IJobClientService>()
                 .AddLocalTarget(provider => {
                     var service = new JobServerService(token);
@@ -107,9 +107,9 @@ namespace ClientServerJobSample
         }
 
 
-        private static IpcHostedClient ConfigureClient(Configuration configuration, CancellationToken token)
+        private static RpcHostedClient ConfigureClient(Configuration configuration, CancellationToken token)
         {
-            return (IpcHostedClient) new IpcHostedClient(configuration)
+            return (RpcHostedClient) new RpcHostedClient(configuration)
                          .AddRemoteProxy<IJobServerService>()
                          .AddLocalTarget<JobClientService>()
                          .ConfigureServices(ConfigureLogging)
@@ -162,11 +162,11 @@ namespace ClientServerJobSample
         }
     }
 
-    public class NLogClientIpcLogger
+    public class NLogClientRpcLogger
     {
         private readonly ILogger _logger;
 
-        public NLogClientIpcLogger(ILogger logger)
+        public NLogClientRpcLogger(ILogger logger)
         {
             _logger = logger;
         }

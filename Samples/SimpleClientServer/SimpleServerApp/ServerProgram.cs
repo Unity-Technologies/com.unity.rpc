@@ -3,13 +3,15 @@ using Serilog.Events;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Unity.Ipc;
+using Unity.Rpc;
 using Mono.Options;
 using Serilog;
 using Shared;
 
 namespace SimpleClientServer
 {
+    using ServerSample;
+
     class ServerProgram
     {
         static async Task<int> Main(string[] args)
@@ -32,15 +34,15 @@ namespace SimpleClientServer
 
             CancellationTokenSource cts = new CancellationTokenSource();
 
-            var server = new IpcServer(new Configuration { Port = port }, cts.Token)
-                         
+            var server = new RpcServer(new Configuration { Port = port }, cts.Token)
+
                          // register ipc proxy types to be dynamically generated when the server starts up
-                         .RegisterRemoteTarget<IIpcJobProgress>()
+                         .RegisterRemoteTarget<IJobProgress>()
 
                          // this is called when the server is initialized
                          .Starting((registration, context) => {
                              // register a singleton object that will be available for all clients
-                             registration.RegisterLocalTarget(new IpcServerSingleton());
+                             registration.RegisterLocalTarget(new RpcServerSingleton());
 
                              logger.Debug("Starting server");
                          })
@@ -54,17 +56,17 @@ namespace SimpleClientServer
                          .ClientConnecting((registration, client) => {
                              logger.Debug($"Client {client.Id} connected");
 
-                             var singleton = client.GetLocalTarget<IpcServerSingleton>();
+                             var singleton = client.GetLocalTarget<RpcServerSingleton>();
                              singleton.AddClient(client.Id);
                              // register a per-client object that has a reference to the server singleton registered above, and a reference to the client
-                             registration.RegisterLocalTarget(new IpcServerPerClientConnection(singleton, client));
+                             registration.RegisterLocalTarget(new RpcServerPerClientConnection(singleton, client));
                          })
 
                          // do some per client initialization
                          .ClientReady(client => {
                              logger.Debug($"Client {client.Id} ready");
 
-                             var singleton = client.GetLocalTarget<IpcServerSingleton>();
+                             var singleton = client.GetLocalTarget<RpcServerSingleton>();
                              singleton.RaiseOnClientConnected(client.Id);
                          })
 

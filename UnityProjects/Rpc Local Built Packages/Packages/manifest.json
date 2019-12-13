@@ -1,0 +1,16 @@
+{
+  "registry": "https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-candidates",
+  "dependencies": {
+    "com.unity.rpc": "file:../../../build/packages/com.unity.rpc",
+    "com.unity.rpc.tests": "file:../../../build/packages/com.unity.rpc.tests",
+    "com.unity.package-manager-ui": "2.2.0",
+    "com.unity.test-framework": "1.0.13",
+    "com.unity.modules.imageconversion": "1.0.0",
+    "com.unity.modules.imgui": "1.0.0",
+    "com.unity.modules.jsonserialize": "1.0.0",
+    "com.unity.modules.ui": "1.0.0"
+  },
+  "testables": [
+    "com.unity.rpc"
+  ]
+}

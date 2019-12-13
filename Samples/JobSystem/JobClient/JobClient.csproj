@@ -5,13 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\com.unity.ipc\Editor\Unity.Ipc\Unity.Ipc.csproj" />
+    <ProjectReference Include="..\..\..\src\com.unity.rpc\Editor\Rpc\Rpc.csproj" />
     <ProjectReference Include="..\BasicJob\BasicJob.csproj" />
     <ProjectReference Include="..\JobBase\JobBase.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="Nerdbank.GitVersioning" Version="3.0.26" />
   </ItemGroup>
 
 </Project>

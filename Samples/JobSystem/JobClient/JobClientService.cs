@@ -2,8 +2,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using JobServer;
-using Unity.Ipc;
-using Unity.Ipc.Extensions;
+using Unity.Rpc;
+using Unity.Rpc.Extensions;
 
 namespace JobClient
 {
