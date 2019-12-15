@@ -19,7 +19,7 @@ var client2 = new RpcClient(configuration);
 await client1.Start();
 await client2.Start();
 
-// IServerInformation is a builtin ipc proxy type that provides basic information about the server
+// IServerInformation is a builtin rpc proxy type that provides basic information about the server
 var serverVersion = await client1.GetRemoteTarget<IServerInformation>().GetVersion();
 Debug.Log(serverVersion.Version);
 

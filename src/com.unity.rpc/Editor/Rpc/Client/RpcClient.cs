@@ -10,7 +10,7 @@ namespace Unity.Rpc
     using System.IO;
 
     /// <summary>
-    /// An ipc client that listens on a tcp socket
+    /// An rpc client that listens on a tcp socket
     /// </summary>
     public class RpcClient : Rpc<RpcClient>
     {

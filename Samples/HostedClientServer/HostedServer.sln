@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.705
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Unity.Ipc", "..\..\src\com.unity.ipc\Editor\Unity.Ipc\Unity.Ipc.csproj", "{EA87DC94-8F04-4FA4-A4E6-D69A41684072}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rpc", "..\..\src\com.unity.rpc\Editor\Rpc\Rpc.csproj", "{EA87DC94-8F04-4FA4-A4E6-D69A41684072}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedServerApp", "HostedServerApp\HostedServerApp.csproj", "{B8E2D7FC-3466-4A77-A5EF-7B06D22E75F3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedInterfaces", "..\Shared\SharedInterfaces\SharedInterfaces.csproj", "{BA1AB829-F637-4ABA-AB4C-2FB47C58ADED}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IpcServerSample", "..\Shared\IpcServerSample\IpcServerSample.csproj", "{72E591EF-4303-4797-A36B-718753BDFD28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerSample", "..\Shared\ServerSample\ServerSample.csproj", "{72E591EF-4303-4797-A36B-718753BDFD28}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Unity.Ipc.Hosted", "..\..\src\Unity.Ipc.Hosted\Unity.Ipc.Hosted.csproj", "{C4F46B8C-F0FB-41AE-BB8C-5CB8D874259A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rpc.Hosted", "..\..\src\Rpc.Hosted\Rpc.Hosted.csproj", "{C4F46B8C-F0FB-41AE-BB8C-5CB8D874259A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

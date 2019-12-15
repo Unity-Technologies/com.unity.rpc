@@ -96,7 +96,7 @@ namespace Unity.Rpc.Hosted
         }
 
         /// <summary>
-        /// Register a class as a local rpc target that can receive ipc calls. This instance will be created
+        /// Register a class as a local rpc target that can receive rpc calls. This instance will be created
         /// when a client connects, so it will be scoped to that specific client.
         /// </summary>
         /// <typeparam name="T"></typeparam>

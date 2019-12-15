@@ -163,8 +163,8 @@ namespace Unity.Rpc
 
         public override bool Equals(object obj)
         {
-            if (obj is RpcVersion ipcVersion)
-                return Equals(ipcVersion);
+            if (obj is RpcVersion rpcVersion)
+                return Equals(rpcVersion);
             return false;
         }
 

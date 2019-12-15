@@ -36,13 +36,13 @@ namespace SimpleClientServer
             ILogger logger = loggerConfiguration.CreateLogger();
             var loggerFactory = new Serilog.Extensions.Logging.SerilogLoggerFactory(logger);
 
-            // controlling when the ipc host shuts down
+            // controlling when the rpc host shuts down
             var cts = new CancellationTokenSource();
 
-            // our ipc host
+            // our rpc host
             var client = new RpcClient(new ClientConfiguration(port), cts.Token);
 
-            // these are the IPC interfaces available on the server that the client can call
+            // these are the RPC interfaces available on the server that the client can call
             client.RegisterRemoteTarget<IServerSingleton>()
                   .RegisterRemoteTarget<IServerPerConnection>()
                   .RegisterRemoteTarget<IClientInfo>();

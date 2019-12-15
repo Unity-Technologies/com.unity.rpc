@@ -44,9 +44,9 @@ namespace Unity.Rpc.Hosted
                 });
         }
 
-        protected THost RegisterRpc(THost ipc)
+        protected THost RegisterRpc(THost rpc)
         {
-            Rpc = ipc;
+            Rpc = rpc;
             Rpc.OnReady += RaiseOnReady;
             Rpc.OnStart += RaiseOnStart;
             Rpc.OnStop += RaiseOnStop;
@@ -102,7 +102,7 @@ namespace Unity.Rpc.Hosted
         }
 
         /// <summary>
-        /// Register a singleton class as a local rpc target that can receive ipc calls
+        /// Register a singleton class as a local rpc target that can receive rpc calls
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
@@ -116,7 +116,7 @@ namespace Unity.Rpc.Hosted
 
 
         /// <summary>
-        /// Register a singleton class as a local rpc target that can receive ipc calls, with a factory that knows how to instantiate it
+        /// Register a singleton class as a local rpc target that can receive rpc calls, with a factory that knows how to instantiate it
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
@@ -192,7 +192,7 @@ namespace Unity.Rpc.Hosted
             OnReady = null;
         }
 
-        protected void RaiseOnStop(Rpc ipc)
+        protected void RaiseOnStop(Rpc rpc)
         {
             OnStop?.Invoke(ServiceProvider);
             OnStop = null;

@@ -12,7 +12,7 @@ namespace Unity.Rpc
     using System.Runtime.ExceptionServices;
 
     /// <summary>
-    /// An ipc server that listens on
+    /// An rpc server that listens on
     /// </summary>
     public class RpcServer : Rpc<RpcServer>
     {

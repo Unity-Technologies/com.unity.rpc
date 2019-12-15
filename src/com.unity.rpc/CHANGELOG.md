@@ -2,4 +2,4 @@
 
 ## [VERSION] - DATE
 
-- Unity.Ipc library
+- com.unity.rpc library

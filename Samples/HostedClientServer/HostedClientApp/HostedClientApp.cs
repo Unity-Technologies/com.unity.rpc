@@ -23,16 +23,16 @@ namespace HostedClientServer
     {
         static async Task Main(string[] args)
         {
-            // monitoring when the ipc host shuts down
+            // monitoring when the rpc host shuts down
             var exiting = new CancellationTokenSource();
 
             // Read command line args and other settings to populate a configuration object
             var configuration = GetConfiguration(args);
 
-            // our ipc host
+            // our rpc host
             var host = new RpcHostedClient(configuration);
 
-            // these are the IPC interfaces available on the server that the client can call
+            // these are the RPC interfaces available on the server that the client can call
             host.AddRemoteProxy<IServerSingleton>()
                 .AddRemoteProxy<IServerPerConnection>()
                 .AddRemoteProxy<IClientInfo>();

@@ -80,7 +80,7 @@ namespace Unity.Rpc
     }
 
     /// <summary>
-    /// An ipc sender/receiver
+    /// An rpc sender/receiver
     /// Call <seealso cref="Attach"/> first, then register receivers and senders
     /// with <seealso cref="RegisterLocalTarget" /> and <seealso cref="RegisterRemoteTarget" />
     /// and then call <seealso cref="StartListening" /> to listen to remote calls.
@@ -144,7 +144,7 @@ namespace Unity.Rpc
 
 
         /// <summary>
-        /// Starts the ipc host, attaching it to the given stream.
+        /// Starts the rpc host, attaching it to the given stream.
         /// </summary>
         /// <param name="stream"></param>
         /// <returns></returns>
@@ -179,7 +179,7 @@ namespace Unity.Rpc
         }
 
         /// <summary>
-        /// Starts the ipc host, attaching it to the given stream.
+        /// Starts the rpc host, attaching it to the given stream.
         /// </summary>
         /// <param name="stream">The stream to attach to.</param>
         /// <param name="startListening">The RpcServer sets this to false, as the stream here is not for use with the rpc object and should not be listened to. Instead, when clients connect, their sockets will be attached to rpc objects.</param>
@@ -288,7 +288,7 @@ namespace Unity.Rpc
         }
 
         /// <summary>
-        /// Initialize the ipc sender/receiver object to use this stream for sending/receiving
+        /// Initialize the rpc sender/receiver object to use this stream for sending/receiving
         /// </summary>
         public void Attach(Stream stream)
         {

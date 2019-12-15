@@ -33,7 +33,7 @@ namespace Unity.Rpc.Tests
                 await client1.Start();
                 await client2.Start();
 
-                // IServerInformation is a builtin ipc proxy that provides basic information about the server
+                // IServerInformation is a builtin rpc proxy that provides basic information about the server
                 var serverVersion = await client1.GetRemoteTarget<IServerInformation>().GetVersion();
                 test.Logger.Info(serverVersion.Version);
 

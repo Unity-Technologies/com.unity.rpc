@@ -36,7 +36,7 @@ namespace SimpleClientServer
 
             var server = new RpcServer(new Configuration { Port = port }, cts.Token)
 
-                         // register ipc proxy types to be dynamically generated when the server starts up
+                         // register rpc proxy types to be dynamically generated when the server starts up
                          .RegisterRemoteTarget<IJobProgress>()
 
                          // this is called when the server is initialized
