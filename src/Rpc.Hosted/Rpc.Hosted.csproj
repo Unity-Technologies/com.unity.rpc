@@ -5,10 +5,10 @@
     <RootDir>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\'))</RootDir>
     <FullBuild Condition="'$(SolutionName)' == 'Unity.Rpc'">true</FullBuild>
     <IsPackable Condition="'$(FullBuild)' != 'true'">false</IsPackable>
-    <PackageId>Unity.Rpc.Hosted</PackageId>
+    <PackageId>com.unity.rpc.hosted</PackageId>
     <AssemblyName>Unity.Rpc.Hosted</AssemblyName>
     <DefaultNamespace>$(AssemblyName)</DefaultNamespace>
-    <Description>RPC library.</Description>
+    <Description>An optional extension of the Unity Rpc library using the Microsoft HostBuilder and Hosting extensions, for DI-type usages. This is only available as a nuget package, for RPC server implementations.</Description>
     <CodeAnalysisRuleSet>$(RootDir)src\rules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
