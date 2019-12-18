@@ -6,6 +6,6 @@
       "enabled": true
     }
   },
-  "pathFilters": ["com.unity.rpc", "Directory.Build.props", "/icon.png", ":/extras", ":/common", ":^./com.unity.rpc/Tests", ":^./com.unity.rpc/CHANGELOG.md" ],
+  "pathFilters": [":/src/com.unity.rpc", ":/src/Directory.build.props", "/icon.png", ":/extras", ":/common", ":^./com.unity.rpc/Tests", ":^./com.unity.rpc/CHANGELOG.md" ],
   "inherit": true
 }
