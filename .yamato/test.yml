@@ -39,8 +39,10 @@ test_{{ platform.name }}_{{ editor.version }}:
 {% endfor %}
 {% endfor %}
 
+# virtual jobs and triggers
+
 test_trigger:
-  name: Build and Test All
+  name: Test All
   dependencies:
     {% for editor in test_editors %}
     {% for platform in test_platforms %}

@@ -18,11 +18,7 @@ publish_staging_nuget:
       Pop-Location
 
   dependencies:
-    {% for editor in test_editors %}
-    {% for platform in test_platforms %}
-    - .yamato/test.yml#test_{{platform.name}}_{{editor.version}}
-    {% endfor %}
-    {% endfor %}
+    - .yamato/test.yml#test_trigger
 
 publish_staging_npm:
   name: Publish - Staging Npm (artifactory)
@@ -42,11 +38,7 @@ publish_staging_npm:
     - for /f "delims=" %%d in ('dir /b "upm-ci~\packages\*.tgz"') do (call npm publish "upm-ci~\packages\%%d" --quiet --registry %PUBLISH_URL%)
 
   dependencies:
-    {% for editor in test_editors %}
-    {% for platform in test_platforms %}
-    - .yamato/test.yml#test_{{platform.name}}_{{editor.version}}
-    {% endfor %}
-    {% endfor %}
+    - .yamato/test.yml#test_trigger
 
 publish_staging_packman:
   name: Publish - Staging Npm (candidates)
@@ -63,12 +55,7 @@ publish_staging_packman:
 {% endfor %}
 
   dependencies:
-    {% for editor in test_editors %}
-    {% for platform in test_platforms %}
-    - .yamato/test.yml#test_{{platform.name}}_{{editor.version}}
-    {% endfor %}
-    {% endfor %}
-
+    - .yamato/test.yml#test_trigger
 
 publish_production_packman:
   name: Publish - Production Npm
@@ -85,11 +72,7 @@ publish_production_packman:
 {% endfor %}
 
   dependencies:
-    {% for editor in test_editors %}
-    {% for platform in test_platforms %}
-    - .yamato/test.yml#test_{{platform.name}}_{{editor.version}}
-    {% endfor %}
-    {% endfor %}
+    - .yamato/test.yml#test_trigger
     - .yamato/publish.yml#publish_staging_npm
     - .yamato/publish.yml#publish_staging_packman
 
@@ -111,11 +94,7 @@ publish_production_nuget:
       Pop-Location
 
   dependencies:
-    {% for editor in test_editors %}
-    {% for platform in test_platforms %}
-    - .yamato/test.yml#test_{{platform.name}}_{{editor.version}}
-    {% endfor %}
-    {% endfor %}
+    - .yamato/test.yml#test_trigger
     - .yamato/publish.yml#publish_staging_nuget
 
 
