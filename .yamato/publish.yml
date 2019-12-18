@@ -121,16 +121,16 @@ publish_production_nuget:
 
 # virtual jobs and triggers
 
-publish_artifactory_trigger:
+publish_staging_artifactory:
   name: Publish - Staging (artifactory only)
   dependencies:
     - .yamato/publish.yml#publish_staging_nuget
     - .yamato/publish.yml#publish_staging_npm
 
 publish_staging_trigger:
-  name: Publish - Staging
+  name: Publish - Staging Trigger
   dependencies:
-    - .yamato/publish.yml#publish_artifactory_trigger
+    - .yamato/publish.yml#publish_staging_artifactory
     - .yamato/publish.yml#publish_staging_packman
   triggers:
     tags:
@@ -138,7 +138,7 @@ publish_staging_trigger:
       - "/.*/"
 
 publish_production_trigger:
-  name: Publish Production Trigger
+  name: Publish - Production Trigger
   dependencies:
     - .yamato/publish.yml#publish_production_nuget
     - .yamato/publish.yml#publish_production_packman
