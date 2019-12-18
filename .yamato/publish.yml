@@ -1,7 +1,7 @@
 {% metadata_file .yamato_config/config.yml %}
 ---
-publish_nuget:
-  name: Publish Nuget
+publish_staging_nuget:
+  name: Publish - Staging Nuget (artifactory)
   agent:
     type: {{ build_agent_type }}
     image: {{ build_agent_image }}
@@ -24,8 +24,8 @@ publish_nuget:
     {% endfor %}
     {% endfor %}
 
-publish_npm:
-  name: Publish Npm
+publish_staging_npm:
+  name: Publish - Staging Npm (artifactory)
   agent:
     type: {{ upm_agent_type }}
     image: {{ upm_agent_image }}
@@ -48,9 +48,8 @@ publish_npm:
     {% endfor %}
     {% endfor %}
 
-
-publish_packman:
-  name: Publish to Candidates
+publish_staging_packman:
+  name: Publish - Staging Npm (candidates)
   agent:
     type: {{ upm_agent_type }}
     image: {{ upm_agent_image }}
@@ -70,18 +69,81 @@ publish_packman:
     {% endfor %}
     {% endfor %}
 
-publish_artifactory:
-  name: Publish to Artifactory
-  dependencies:
-    - .yamato/publish.yml#publish_nuget
-    - .yamato/publish.yml#publish_npm
 
-publish_trigger:
-  name: Publish
+publish_production_packman:
+  name: Publish - Production Npm
+  agent:
+    type: {{ upm_agent_type }}
+    image: {{ upm_agent_image }}
+    flavor: {{ upm_agent_flavor }}
+  skip_checkout: true
+
+  commands:
+    - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
+{% for package in packages %}
+    - upm-ci package promote --package-path build\packages\{{ package.name }}
+{% endfor %}
+
   dependencies:
-    - .yamato/publish.yml#publish_artifactory
-    - .yamato/publish.yml#publish_packman
+    {% for editor in test_editors %}
+    {% for platform in test_platforms %}
+    - .yamato/test.yml#test_{{platform.name}}_{{editor.version}}
+    {% endfor %}
+    {% endfor %}
+    - .yamato/publish.yml#publish_staging_npm
+    - .yamato/publish.yml#publish_staging_packman
+
+publish_production_nuget:
+  name: Publish - Production Nuget
+  agent:
+    type: {{ build_agent_type }}
+    image: {{ build_agent_image }}
+    flavor: {{ build_agent_flavor }}
+  interpreter: powershell
+  skip_checkout: true
+  variables:
+    PUBLISH_URL: https://api.nuget.org/v3/index.json
+
+  commands:
+    - |
+      Push-Location build\nuget\Release
+      Get-ChildItem | %{ dotnet nuget push $_.Name -k $($env:NUGET) -s $($env:PUBLISH_URL) }
+      Pop-Location
+
+  dependencies:
+    {% for editor in test_editors %}
+    {% for platform in test_platforms %}
+    - .yamato/test.yml#test_{{platform.name}}_{{editor.version}}
+    {% endfor %}
+    {% endfor %}
+    - .yamato/publish.yml#publish_staging_nuget
+
+
+# virtual jobs and triggers
+
+publish_artifactory_trigger:
+  name: Publish - Staging (artifactory only)
+  dependencies:
+    - .yamato/publish.yml#publish_staging_nuget
+    - .yamato/publish.yml#publish_staging_npm
+
+publish_staging_trigger:
+  name: Publish - Staging
+  dependencies:
+    - .yamato/publish.yml#publish_artifactory_trigger
+    - .yamato/publish.yml#publish_staging_packman
   triggers:
     tags:
       only:
       - "/.*/"
+
+publish_production_trigger:
+  name: Publish Production Trigger
+  dependencies:
+    - .yamato/publish.yml#publish_production_nuget
+    - .yamato/publish.yml#publish_production_packman
+  # triggers:
+  #   tags:
+  #     only:
+  #     - "/.*/"
+
