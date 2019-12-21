@@ -1,7 +1,7 @@
 {% metadata_file .yamato_config/config.yml %}
 ---
-publish_staging_nuget:
-  name: Publish - Staging Nuget (artifactory)
+publish_nuget_artifactory:
+  name: Publish - Nuget Artifactory
   agent:
     type: {{ build_agent_type }}
     image: {{ build_agent_image }}
@@ -20,8 +20,29 @@ publish_staging_nuget:
   dependencies:
     - .yamato/test.yml#test_trigger
 
-publish_staging_npm:
-  name: Publish - Staging Npm (artifactory)
+publish_nuget_org:
+  name: Publish - Nuget
+  agent:
+    type: {{ build_agent_type }}
+    image: {{ build_agent_image }}
+    flavor: {{ build_agent_flavor }}
+  interpreter: powershell
+  skip_checkout: true
+  variables:
+    PUBLISH_URL: https://api.nuget.org/v3/index.json
+    UPMCI_PROMOTION: 1
+
+  commands:
+    - |
+      Push-Location build\nuget\Release
+      Get-ChildItem | %{ dotnet nuget push $_.Name -k $($env:NUGET) -s $($env:PUBLISH_URL) }
+      Pop-Location
+
+  dependencies:
+    - .yamato/test.yml#test_trigger
+
+publish_npm_artifactory:
+  name: Publish - Npm Artifactory
   agent:
     type: {{ upm_agent_type }}
     image: {{ upm_agent_image }}
@@ -40,8 +61,8 @@ publish_staging_npm:
   dependencies:
     - .yamato/test.yml#test_trigger
 
-publish_staging_packman:
-  name: Publish - Staging Npm (candidates)
+publish_candidates:
+  name: Publish - Candidates
   agent:
     type: {{ upm_agent_type }}
     image: {{ upm_agent_image }}
@@ -52,18 +73,21 @@ publish_staging_packman:
     - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
 {% for package in packages %}
     - upm-ci package publish --package-path build\packages\{{ package.name }}
+    - upm-ci package publish --package-path build\packages\{{ package.name }}.tests
 {% endfor %}
 
   dependencies:
     - .yamato/test.yml#test_trigger
 
-publish_production_packman:
-  name: Publish - Production Npm
+publish_public:
+  name: Publish - Production
   agent:
     type: {{ upm_agent_type }}
     image: {{ upm_agent_image }}
     flavor: {{ upm_agent_flavor }}
   skip_checkout: true
+  variables:
+    UPMCI_PROMOTION: 1
 
   commands:
     - npm install upm-ci-utils@stable -g --registry https://api.bintray.com/npm/unity/unity-npm
@@ -72,57 +96,40 @@ publish_production_packman:
 {% endfor %}
 
   dependencies:
-    - .yamato/test.yml#test_trigger
-    - .yamato/publish.yml#publish_staging_npm
-    - .yamato/publish.yml#publish_staging_packman
-
-publish_production_nuget:
-  name: Publish - Production Nuget
-  agent:
-    type: {{ build_agent_type }}
-    image: {{ build_agent_image }}
-    flavor: {{ build_agent_flavor }}
-  interpreter: powershell
-  skip_checkout: true
-  variables:
-    PUBLISH_URL: https://api.nuget.org/v3/index.json
-
-  commands:
-    - |
-      Push-Location build\nuget\Release
-      Get-ChildItem | %{ dotnet nuget push $_.Name -k $($env:NUGET) -s $($env:PUBLISH_URL) }
-      Pop-Location
-
-  dependencies:
-    - .yamato/test.yml#test_trigger
-    - .yamato/publish.yml#publish_staging_nuget
+    - .yamato/test.yml#test_production_trigger
+    - .yamato/publish.yml#publish_staging
 
 
 # virtual jobs and triggers
 
-publish_staging_artifactory:
-  name: Publish - Staging (artifactory only)
+publish_nuget:
+  name: Publish Nuget
   dependencies:
-    - .yamato/publish.yml#publish_staging_nuget
-    - .yamato/publish.yml#publish_staging_npm
+    - .yamato/publish.yml#publish_nuget_artifactory
+    - .yamato/publish.yml#publish_nuget_org
+  triggers:
+    tags:
+      only:
+      - "/nuget/v\\d+\\.\\d+.*/"
 
-publish_staging_trigger:
-  name: Publish - Staging Trigger
+publish_staging:
+  name: Publish - Staging
   dependencies:
-    - .yamato/publish.yml#publish_staging_artifactory
-    - .yamato/publish.yml#publish_staging_packman
+    - .yamato/publish.yml#publish_nuget
+    - .yamato/publish.yml#publish_npm_artifactory
+    - .yamato/publish.yml#publish_candidates
   triggers:
     tags:
       only:
       - "/.*/"
 
-publish_production_trigger:
+publish_production:
   name: Publish - Production Trigger
   dependencies:
-    - .yamato/publish.yml#publish_production_nuget
-    - .yamato/publish.yml#publish_production_packman
-  # triggers:
-  #   tags:
-  #     only:
-  #     - "/.*/"
+    - .yamato/publish.yml#publish_staging
+    - .yamato/publish.yml#publish_public
+  triggers:
+    tags:
+      only:
+      - "/release.*/v\\d+\\.\\d+.*/"
 
