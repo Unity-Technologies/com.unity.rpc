@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="Unity.Editor.Tasks" Version="1.1.17" />
+    <PackageReference Include="com.unity.editor.tasks" Version="1.2.20" />
   </ItemGroup>
 
 </Project>
