@@ -115,17 +115,6 @@ test_production_trigger:
     {% endfor %}
     {% endfor %}
   triggers:
-    pull_requests:
-      - targets:
-          only:
-            - "master"
-            - "/v\\d+\\.\\d+.*/"
-            - "/release.*/v\\d+\\.\\d+.*/"
-    branches:
-      only:
-      - "master"
-      - "/v\\d+\\.\\d+.*/"
-      - "/release.*/v\\d+\\.\\d+.*/"
     tags:
       only:
-      - "/.*/"
+      - "/release.*/v\\d+\\.\\d+.*/"
