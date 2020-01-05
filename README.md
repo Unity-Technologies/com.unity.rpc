@@ -1,13 +1,35 @@
+# About the Unity RPC package
+
 ## Build
 
-`dotnet build -c Release`
+## How to build
 
-## Where are the built artifacts?
+Check [How to Build](https://raw.githubusercontent.com/Unity-Technologies/Git-for-Unity/master/BUILD.md) for all the build, packaging and versioning details.
 
-Nuget packages are in `build/nuget`. Npm packages are in `build/npm`.
-Binaries for each project are in `build/bin` for the main projects, `build/Samples/bin` for the samples, and `build/bin/tests` for the tests.
+### Release build 
 
-## How to bump the major or minor parts of the version
+`build[.sh|cmd] -r`
+
+### Release build and package
+
+`pack[.sh|cmd] -r -b`
+
+### Release build and test
+
+`test[.sh|cmd] -r -b`
+
+
+### Where are the build artifacts?
+
+Packages sources are in `build/packages`.
+
+Nuget packages are in `build/nuget`.
+
+Packman (npm) packages are in `upm-ci~/packages`.
+
+Binaries for each project are in `build/bin` for the main projects and `build/tests` for the tests.
+
+### How to bump the major or minor parts of the version
 
 The `version.json` file in the root of the repo controls the version for all packages.
 Set the major and/or minor number in it and **commit the change** so that the next build uses the new version.
