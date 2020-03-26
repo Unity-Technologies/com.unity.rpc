@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="avostres.ILRepack" Version="2.1.1" PrivateAssets="all" />
-    <PackageReference Include="StreamRpc" Version="2.1.50-beta" />
+    <PackageReference Include="StreamRpc" Version="2.1.56" />
   </ItemGroup>
 
   <Import Project="$(RootDir)common\packaging.targets" Condition="'$(FullBuild)' == 'true'" />
