@@ -44,7 +44,7 @@ namespace SimpleClientServer
                              // register a singleton object that will be available for all clients
                              registration.RegisterLocalTarget(new RpcServerSingleton());
 
-                             logger.Debug("Starting server");
+                             logger.Debug($"Starting server on port {((RpcServer)context).Configuration.Port}");
                          })
 
                          // this is called when the server stops

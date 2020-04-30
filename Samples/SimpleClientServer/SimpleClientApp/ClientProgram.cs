@@ -117,6 +117,17 @@ namespace SimpleClientServer
 
             verbosity = verbose;
             port = port_;
+
+            if (port <= 0)
+            {
+                Console.WriteLine("A port number for the server is required. Enter the port, or ENTER to exit");
+                var input = Console.ReadLine();
+                if (!int.TryParse(input, out port) || port <= 0)
+                {
+                    Console.WriteLine("Invalid port. Exiting");
+                }
+            }
+
             return true;
         }
     }
