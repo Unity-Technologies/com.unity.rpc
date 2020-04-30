@@ -77,7 +77,7 @@ namespace HostedClientServer
             }
         }
 
-        private const string YamlSettingsFile = "appsettings.settings";
+        private const string YamlSettingsFile = "appsettings.yaml";
         private const string JsonSettingsFile = "appsettings.json";
         // configure the host environment. this will be inherited into the app environment
         private static Configuration GetConfiguration(string[] args)
@@ -87,8 +87,8 @@ namespace HostedClientServer
 
             var builder = new ConfigurationBuilder()
                           .SetBasePath(Directory.GetCurrentDirectory())
-                          .AddJsonFile(JsonSettingsFile + ".json", optional: true, reloadOnChange: false)
-                          .AddYamlFile(YamlSettingsFile + ".settings", optional: true, reloadOnChange: false)
+                          .AddJsonFile(JsonSettingsFile, optional: true, reloadOnChange: false)
+                          .AddYamlFile(YamlSettingsFile, optional: true, reloadOnChange: false)
                           .AddEnvironmentVariables("HOSTEDSERVER_")
                           .AddExtendedCommandLine(args);
             var conf = builder.Build();

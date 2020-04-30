@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -26,6 +26,12 @@
     <ProjectReference Include="..\..\..\src\Rpc.Hosted\Rpc.Hosted.csproj" />
     <ProjectReference Include="..\..\Shared\ClientSample\ClientSample.csproj" />
     <ProjectReference Include="..\..\Shared\SharedInterfaces\SharedInterfaces.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\appsettings.yaml" Link="appsettings.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
