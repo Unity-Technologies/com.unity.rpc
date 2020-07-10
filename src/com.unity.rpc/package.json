@@ -6,7 +6,7 @@
   "unity": "2018.4",
   "repository": {
     "type": "git",
-    "url": "git@github.cds.internal.unity3d.com:unity/Unity.Ipc.git",
+    "url": "https://github.com/Unity-Technologies/com.unity.rpc.git",
     "revision": "hash"
   },
   "testPackages": {
