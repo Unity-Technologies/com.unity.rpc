@@ -10,6 +10,7 @@ test_{{ platform.name }}_{{ editor.version }}:
     flavor: {{ platform.flavor}}
 
   commands:
+    # at the moment upm-ci-utils@stable version is 1.13.4 but it's using python 2 which is already deprecated and causes build errors
     - npm install upm-ci-utils@latest --registry https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-npm -g
 {% for package in packages %}
     - upm-ci package test --package-path build\packages\{{ package.name }} -u {{editor.version}}
@@ -51,7 +52,8 @@ test_production_{{ platform.name }}_{{ editor.version }}:
     UPMCI_PROMOTION: 1
 
   commands:
-    - npm install upm-ci-utils@stable -g --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm
+    # at the moment upm-ci-utils@stable version is 1.13.4 but it's using python 2 which is already deprecated and causes build errors
+    - npm install upm-ci-utils@latest --registry https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-npm
 {% for package in packages %}
     - upm-ci package test --package-path build\packages\{{ package.name }} -u {{editor.version}}
 {% endfor %}
