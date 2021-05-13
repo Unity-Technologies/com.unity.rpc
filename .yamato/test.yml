@@ -10,7 +10,7 @@ test_{{ platform.name }}_{{ editor.version }}:
     flavor: {{ platform.flavor}}
 
   commands:
-    - npm install upm-ci-utils@stable --registry https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-npm -g
+    - npm install upm-ci-utils@latest --registry https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-npm -g
 {% for package in packages %}
     - upm-ci package test --package-path build\packages\{{ package.name }} -u {{editor.version}}
 {% endfor %}
