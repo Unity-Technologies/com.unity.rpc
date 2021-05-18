@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net471;netcoreapp2.2</TargetFrameworks>
+    <TargetFrameworks>net471;netcoreapp3.1</TargetFrameworks>
     <RootDir>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\..\..\'))</RootDir>
     <PackageSourceRoot>$(MSBuildProjectDirectory)\..\..\</PackageSourceRoot>
     <FullBuild Condition="'$(SolutionName)' == 'Unity.Rpc'">true</FullBuild>
@@ -28,7 +28,7 @@
   <Import Project="$(RootDir)common\packaging.targets" Condition="'$(FullBuild)' == 'true'" />
 
   <ItemGroup Condition="'$(FullBuild)' == 'true'">
-    <PackageReference Include="Nerdbank.GitVersioning" Version="3.1.38-beta-g5d1f8441c5" PrivateAssets="all" Private="false" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.4.194" PrivateAssets="all" Private="false" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19367-01" PrivateAssets="All" />
   </ItemGroup>
 

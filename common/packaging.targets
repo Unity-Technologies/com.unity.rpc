@@ -52,9 +52,7 @@
      Condition=" '$(TargetFramework)' == 'net471' " >
 
     <PropertyGroup>
-      <NeedsSuffix Condition="'$(PublicRelease)' != 'true' and '$(NpmVersionSuffix)' != '' and !$(NuGetPackageVersion.Contains('$(NpmVersionSuffix)'))">true</NeedsSuffix>
-      <NpmVersion Condition=" '$(NeedsSuffix)' != 'true' ">$(NuGetPackageVersion)</NpmVersion>
-      <NpmVersion Condition=" '$(NeedsSuffix)' == 'true'">$(BuildVersionSimple)$(NpmVersionSuffix)-g$(GitCommitIdShort)</NpmVersion>
+      <NpmVersion>$(BuildVersionSimple)$(PrereleaseVersion)</NpmVersion>
     </PropertyGroup>
 
     <FileUpdate
@@ -151,9 +149,7 @@
     Condition="Exists('$(PackageSourceRoot)\Tests') and '$(TargetFramework)' == 'net471' " >
 
     <PropertyGroup>
-      <NeedsSuffix Condition="'$(PublicRelease)' != 'true' and '$(NpmVersionSuffix)' != '' and !$(NuGetPackageVersion.Contains('$(NpmVersionSuffix)'))">true</NeedsSuffix>
-      <NpmVersion Condition=" '$(NeedsSuffix)' != 'true' ">$(NuGetPackageVersion)</NpmVersion>
-      <NpmVersion Condition=" '$(NeedsSuffix)' == 'true'">$(BuildVersionSimple)$(NpmVersionSuffix)-g$(GitCommitIdShort)</NpmVersion>
+      <NpmVersion>$(BuildVersionSimple)$(PrereleaseVersion)</NpmVersion>
     </PropertyGroup>
 
     <FileUpdate
