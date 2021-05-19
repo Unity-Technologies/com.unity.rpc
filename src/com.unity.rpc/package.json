@@ -3,7 +3,7 @@
   "displayName": "Unity RPC Client",
   "description": "Unity RPC is an RPC library with no native dependencies, using JSON-RPC+MessagePack as the message protocol encoded in binary packages for fast, reliable, minimal-allocation RPC over loopback network sockets.",
   "version": "0.0.0-placeholder",
-  "unity": "2018.4",
+  "unity": "2019.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/Unity-Technologies/com.unity.rpc.git",
