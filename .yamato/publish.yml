@@ -67,7 +67,6 @@ publish_candidates:
     type: {{ upm_agent_type }}
     image: {{ upm_agent_image }}
     flavor: {{ upm_agent_flavor }}
-  skip_checkout: true
 
   commands:
     - npm install upm-ci-utils@stable -g --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm

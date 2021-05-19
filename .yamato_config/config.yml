@@ -22,6 +22,7 @@ test_platforms:
 
 test_editors:
   - version: 2019.2
+  - version: trunk
 
 packages:
   - name: com.unity.rpc
