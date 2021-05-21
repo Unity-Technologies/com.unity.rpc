@@ -1,7 +1,7 @@
 {
   "name": "com.unity.rpc",
   "displayName": "Unity RPC Client",
-  "description": "Unity RPC is an RPC library with no native dependencies, using JSON-RPC+MessagePack as the message protocol encoded in binary packages for fast, reliable, minimal-allocation RPC over loopback network sockets.",
+  "description": "Unity RPC Client is a remote procedure call library using JSON-RPC and MessagePack as the message protocol encoded in binary packages for a fast, reliable and minimal-allocation local RPC.",
   "version": "0.0.0-placeholder",
   "unity": "2019.2",
   "repository": {

@@ -1,6 +1,6 @@
 ## About com.unity.rpc
 
-Unity RPC is a C# RPC library using JSON-RPC+MessagePack as the message protocol encoded in binary packages for fast, reliable, minimal-allocation local RPC.
+Unity RPC Client is a [remote procedure call](https://en.wikipedia.org/wiki/Remote_procedure_call) library using [JSON-RPC](https://en.wikipedia.org/wiki/JSON-RPC) and [MessagePack](https://github.com/neuecc/MessagePack-CSharp) as the message protocol encoded in binary packages for a fast, reliable and minimal-allocation local RPC.
 
 `RpcClient` and `RpcServer` are the two main entry points for this library, depending on whether you're implementing a client or a server. The connection between clients and server is bidirectional, so once a connection is established, both can send and receives method calls and event calls.
 

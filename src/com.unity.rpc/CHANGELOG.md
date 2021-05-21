@@ -7,4 +7,4 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ### This is the first release of *Unity Package Unity RPC Client*.
 
-Unity RPC enables fast and reliable [RPC](https://en.wikipedia.org/wiki/Remote_procedure_call) over loopback network sockets using [StreamRPC](https://github.com/shana/StreamRPC) library.
+Unity RPC Client is a [remote procedure call](https://en.wikipedia.org/wiki/Remote_procedure_call) library using [JSON-RPC](https://en.wikipedia.org/wiki/JSON-RPC) and [MessagePack](https://github.com/neuecc/MessagePack-CSharp) as the message protocol encoded in binary packages for a fast, reliable and minimal-allocation local RPC.
