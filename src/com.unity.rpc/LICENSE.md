@@ -1,4 +1,4 @@
-com.unity.rpc © 2021 Unity Technologies
+com.unity.rpc © 2021 Unity Technologies ApS
 
 Licensed under the Unity Companion License for Unity-dependent projects (see https://unity3d.com/legal/licenses/unity_companion_license).
 
