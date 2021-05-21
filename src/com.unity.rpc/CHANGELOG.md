@@ -1,17 +1,10 @@
 # Changelog
+All notable changes to this package will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [VERSION] - DATE
 
-- Bump editor.tasks to 1.2.22
+### This is the first release of *Unity Package Unity RPC Client*.
 
-## [1.0.20-preview] - 2019-12-21
-
-- Bump .netframework reference assemblies dependency to release version
-
-## [1.0.11-preview] - 2019-12-16
-
-- ilrepack the rpc dlls into one bundle
-
-## [1.0.9-preview] - 2019-12-13
-
-- com.unity.rpc library
+Unity RPC enables fast and reliable [RPC](https://en.wikipedia.org/wiki/Remote_procedure_call) over loopback network sockets using [StreamRPC](https://github.com/shana/StreamRPC) library.
