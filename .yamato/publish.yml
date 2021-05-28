@@ -84,7 +84,6 @@ publish_public:
     type: {{ upm_agent_type }}
     image: {{ upm_agent_image }}
     flavor: {{ upm_agent_flavor }}
-  skip_checkout: true
   variables:
     UPMCI_PROMOTION: 1
 
