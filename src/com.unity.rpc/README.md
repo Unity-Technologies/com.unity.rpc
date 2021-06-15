@@ -2,6 +2,8 @@
 
 Unity RPC is a C# RPC library using JSON-RPC+MessagePack as the message protocol encoded in binary packages for fast, reliable, minimal-allocation local RPC.
 
+There are no built-in authentication or authorization mechanisms. User must provide one if needed.
+
 `RpcClient` and `RpcServer` are the two main entry points for this library, depending on whether you're implementing a client or a server. The connection between clients and server is bidirectional, so once a connection is established, both can send and receives method calls and event calls.
 
 Example:

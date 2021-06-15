@@ -44,6 +44,10 @@ server.Stop();
 await server.WaitUntilDone();
 ```
 
+## Security
+
+There are no built-in authentication or authorization mechanisms. User must provide one if needed.
+
 ## Build
 
 ## How to build
