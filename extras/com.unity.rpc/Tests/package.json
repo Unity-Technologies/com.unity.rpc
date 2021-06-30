@@ -12,6 +12,6 @@
     },
     "dependencies": {
         "com.unity.rpc": "0.0.0-placeholder",
-        "com.unity.editor.tasks": "1.2.22"
+        "com.unity.editor.tasks": "2.1.3-exp.6"
     }
 }
